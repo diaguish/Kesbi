@@ -19,8 +19,10 @@ lib/
   main.dart            Point d'entrée
   app.dart             MaterialApp, thème, navigation
   core/                Code partagé, sans logique métier d'un module
+    router/            go_router : Routes (chemins), authRedirect (garde unique), appRouterProvider
     theme/             AppColors (seule source des couleurs), AppTheme
     utils/money.dart   Formatage FCFA (seule fonction de formatage des montants)
+    widgets/           MainShell (barre 4 onglets), widgets partagés
   features/            Un dossier par module (créé au fil des semaines)
     auth/
     encaissements/
@@ -28,6 +30,12 @@ lib/
 ```
 Chaque module de `features/` suit le même découpage : `data/` (API, sqflite),
 `domain/` (modèles), `presentation/` (écrans, widgets).
+
+## État et navigation ([ADR 0006](../docs/decisions/0006-riverpod-go-router.md))
+- **Riverpod** (sans génération de code) : les écrans lisent les données via des providers,
+  jamais sqflite ou l'API en direct.
+- **go_router** : chemins dans `Routes`, accès contrôlé par `authRedirect()`
+  (OTP → PIN → onboarding → app). Nouvel écran protégé = nouveau test dans `routes_test.dart`.
 
 ## Règles
 - Couleurs : uniquement via `AppColors`. Jamais de hex dans un widget.

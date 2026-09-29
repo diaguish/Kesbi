@@ -10,3 +10,4 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions [Sem
 - Maquettes v0 et règles UI (`docs/design/`).
 - App Flutter `mobile/` (Android + iOS), identifiant `com.kesbi.app` (ADR 0005),
   thème aux couleurs Kës Bi, formatage FCFA testé.
+- Riverpod + go_router (ADR 0006) : barre à 4 onglets, garde d'accès OTP / PIN / onboarding testée.

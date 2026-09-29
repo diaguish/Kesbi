@@ -11,7 +11,7 @@ Remplace le cahier de caisse : encaissements, dépenses, trésorerie multi-compt
 ## Stack (verrouillée — ne pas proposer d'alternatives)
 | Couche | Techno |
 |---|---|
-| Mobile | Flutter 3.47.x + Dart (`/mobile`) |
+| Mobile | Flutter 3.47.x + Dart (`/mobile`), Riverpod + go_router ([ADR 0006](docs/decisions/0006-riverpod-go-router.md)) |
 | API | Django + DRF sur Render (`/backend`) |
 | BDD / Auth / Realtime | Supabase (PostgreSQL, Supabase Auth OTP, Realtime) |
 | Push | Firebase Cloud Messaging (APNs pour iOS) |

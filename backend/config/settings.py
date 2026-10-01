@@ -55,8 +55,9 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 # Base : Supabase Postgres via DATABASE_URL. SQLite en local si non défini.
 DATABASES = {
-    "default": dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+    # `or` : une variable présente mais vide (`DATABASE_URL=`) retombe aussi sur SQLite.
+    "default": dj_database_url.parse(
+        os.environ.get("DATABASE_URL") or f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
         conn_max_age=int(os.environ.get("DB_CONN_MAX_AGE", "60")),
         conn_health_checks=True,
     )

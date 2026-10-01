@@ -58,7 +58,13 @@ Multi-utilisateur/rôles (P2), prévision trésorerie 30/90j (P2), scoring banca
 ## Workflow Git
 Voir [docs/git-workflow.md](docs/git-workflow.md). Résumé : `feature/*` → `dev` → `main` (deploy).
 
+## Suivi de projet (obligatoire)
+[docs/suivi-projet.md](docs/suivi-projet.md) est le cahier des charges et le tableau de bord du projet.
+**À la fin de chaque session de travail, le mettre à jour** (états, à faire, risques, journal)
+et le commiter sur `dev` (`docs(suivi): session du JJ/MM`).
+
 ## Documentation
+- [docs/suivi-projet.md](docs/suivi-projet.md) — **cahier des charges, avancement, journal des sessions**
 - [docs/architecture.md](docs/architecture.md) — architecture et flux
 - [docs/setup.md](docs/setup.md) — installer l'environnement (Windows + Mac)
 - [docs/roadmap.md](docs/roadmap.md) — planning 10 semaines + jalons stores

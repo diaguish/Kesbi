@@ -36,7 +36,7 @@ Légende : ✅ fait · 🟡 en cours · ⬜ à faire · ❌ retiré
 | A6 | Création de la boutique (nom, activité) | ⬜ |
 | A7 | Soldes d'ouverture par compte (« Ignorer » = 0) ([ADR 0004](decisions/0004-comptes-et-soldes-ouverture.md)) | ⬜ |
 | A8 | Suppression du compte depuis l'app (exigence Apple + Google) | ⬜ |
-| A9 | Vérification du JWT Supabase par Django à chaque requête | ⬜ |
+| A9 | Vérification du JWT Supabase par Django à chaque requête | 🟡 codé et testé (`feature/setup-backend`), à valider avec un vrai JWT |
 
 ### 2.2 Encaissements — S3
 | # | Exigence | État |
@@ -124,18 +124,19 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | Priorité | Tâche | État |
 |---|---|---|
 | ✅ | Créer le projet Supabase — ref `ubpvgafdhjnsimffybnd` (`https://ubpvgafdhjnsimffybnd.supabase.co`) | ✅ 01/10 |
-| 🔴 | Redémarrer la session Claude Code et se connecter au MCP Supabase (`.mcp.json`) | ⬜ |
+| 🔴 | Autoriser le MCP Supabase (OAuth) — le serveur est vu mais **non authentifié** au 01/10 | ⬜ |
+| 🔴 | Supabase : vérifier le type de clés JWT (Settings → JWT Keys : asymétriques attendues) et récupérer la chaîne **Session pooler** | ⬜ |
 | 🔴 | Supabase : indiquer la région ; activer Auth → Phone ; ajouter un numéro de test (ex. `+221770000000` / `123456`) | ⬜ |
 | 🔴 | Choisir un fournisseur SMS et tester la réception sur Orange / Free / Expresso | ⬜ |
 | 🔴 | Ouvrir Apple Developer (99 $) et Play Console (25 $) — personnel ou organisation ? | ⬜ |
-| 🟠 | Créer le compte Render | ⬜ |
+| 🟠 | Créer le compte Render, puis New → Blueprint sur le repo (`render.yaml`) avec `DATABASE_URL` et `SUPABASE_URL` | ⬜ |
 | 🟠 | Tester `feature/setup-mobile` sur le Mac (iOS) puis ouvrir la PR vers `dev` | ⬜ |
 | 🟡 | Police Poppins : télécharger ou autoriser le téléchargement | ⬜ |
 | 🟡 | Supprimer l'ancien dossier du repo dans OneDrive | ⬜ |
 | 🟡 | Protéger la branche `main` sur GitHub | ⬜ |
 
 ### Développement (prochaines étapes)
-1. `feature/setup-backend` : Django + DRF, vérification JWT Supabase, modèle Boutique, filtrage `boutique_id`, `.env.example`, config Render.
+1. `feature/setup-backend` (🟡 codé, 23 tests au vert) : migrer sur Supabase et tester avec un vrai JWT dès que le MCP / la chaîne de connexion sont disponibles, puis PR vers `dev`.
 2. `feature/auth-otp-pin` : écrans numéro → OTP → création PIN, déverrouillage, stockage sécurisé.
 3. Onboarding : création boutique, soldes d'ouverture, suppression de compte.
 
@@ -152,6 +153,7 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | Render gratuit en veille (30-50 s) | Mauvaise 1ère impression | Offre payante (~7 $/mois) en production |
 | Charge : ~200 h pour tout le MVP | Retard global | Suivi hebdo dans ce document, délestage Rapports |
 | MCP Supabase avec accès écriture (`database`, `account`, `branching`) | Modification de données réelles / coûts | Projet Supabase **séparé** pour la production, jamais relié au MCP (ou `read_only=true`) |
+| Tables Django dans le schéma `public` exposé par l'API Supabase | Données lisibles avec la clé `anon` | `enable_rls()` obligatoire dans chaque migration (ADR 0007) |
 | `AuthStatus.ready` provisoire dans l'app | App déverrouillée sans auth | Supprimé dans `feature/auth-otp-pin` — **ne jamais publier en l'état** |
 
 ---
@@ -167,10 +169,18 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | 28/09 | Identifiant d'app `com.kesbi.app` | [ADR 0005](decisions/0005-identifiant-application.md) |
 | 29/09 | Riverpod (sans codegen) + go_router | [ADR 0006](decisions/0006-riverpod-go-router.md) |
 | 28/09 | Repo déplacé hors OneDrive vers `C:\dev\Kesbi` | — |
+| 01/10 | Backend : Django 5.2 LTS sans contrib.auth, JWT Supabase via JWKS, isolation par boutique, RLS sur les tables Django | [ADR 0007](decisions/0007-backend-auth-jwt-et-isolation.md) |
 
 ---
 
 ## 7. Journal des sessions
+
+### 01/10/2026 (2)
+- MCP Supabase : serveur détecté mais **authentification OAuth non faite** → non vérifié.
+- Branche `feature/setup-backend` : Django 5.2 LTS + DRF, vérification du JWT Supabase (JWKS / HS256),
+  modèles Boutique + Membre, création idempotente, `BoutiqueScopedMixin`, RLS automatique sur les
+  tables créées, `render.yaml`, `.env.example`, ADR 0007. 23 tests au vert (SQLite).
+- **Reprise** : autoriser le MCP, vérifier les clés JWT du projet, `migrate` sur Supabase, test de bout en bout.
 
 ### 01/10/2026
 - App relancée sur l'émulateur Android : OK.

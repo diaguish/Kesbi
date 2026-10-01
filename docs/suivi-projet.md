@@ -123,7 +123,9 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 ### Diago (actions hors code)
 | Priorité | Tâche | État |
 |---|---|---|
-| 🔴 | Créer le projet Supabase (région Europe) et transmettre l'URL (jamais les clés) | ⬜ |
+| ✅ | Créer le projet Supabase — ref `ubpvgafdhjnsimffybnd` (`https://ubpvgafdhjnsimffybnd.supabase.co`) | ✅ 01/10 |
+| 🔴 | Redémarrer la session Claude Code et se connecter au MCP Supabase (`.mcp.json`) | ⬜ |
+| 🔴 | Supabase : indiquer la région ; activer Auth → Phone ; ajouter un numéro de test (ex. `+221770000000` / `123456`) | ⬜ |
 | 🔴 | Choisir un fournisseur SMS et tester la réception sur Orange / Free / Expresso | ⬜ |
 | 🔴 | Ouvrir Apple Developer (99 $) et Play Console (25 $) — personnel ou organisation ? | ⬜ |
 | 🟠 | Créer le compte Render | ⬜ |
@@ -149,6 +151,7 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | Livraison des SMS OTP au Sénégal | Inscription impossible | Tester le fournisseur tôt ; numéros de test Supabase en dev |
 | Render gratuit en veille (30-50 s) | Mauvaise 1ère impression | Offre payante (~7 $/mois) en production |
 | Charge : ~200 h pour tout le MVP | Retard global | Suivi hebdo dans ce document, délestage Rapports |
+| MCP Supabase avec accès écriture (`database`, `account`, `branching`) | Modification de données réelles / coûts | Projet Supabase **séparé** pour la production, jamais relié au MCP (ou `read_only=true`) |
 | `AuthStatus.ready` provisoire dans l'app | App déverrouillée sans auth | Supprimé dans `feature/auth-otp-pin` — **ne jamais publier en l'état** |
 
 ---
@@ -173,6 +176,9 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 - App relancée sur l'émulateur Android : OK.
 - Bilan S2 : base solide, **authentification pas commencée** (bloquée par Supabase).
 - Création de ce document de suivi.
+- Projet Supabase créé (ref `ubpvgafdhjnsimffybnd`). Serveur MCP Supabase ajouté au projet
+  (`.mcp.json`) — actif après redémarrage de la session et connexion.
+- **Reprise à la prochaine session** : vérifier le MCP Supabase, puis démarrer `feature/setup-backend`.
 
 ### 29/09/2026
 - Ajout de Riverpod et go_router : barre à 4 onglets, garde d'accès unique `authRedirect()` (ADR 0006).

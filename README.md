@@ -16,6 +16,7 @@ Voir [docs/setup.md](docs/setup.md) pour l'installation complète.
 ## Documentation
 | Document | Contenu |
 |---|---|
+| [docs/suivi-projet.md](docs/suivi-projet.md) | **Cahier des charges, avancement, journal** |
 | [CLAUDE.md](CLAUDE.md) | Contexte projet, règles, stack |
 | [docs/architecture.md](docs/architecture.md) | Architecture et flux de données |
 | [docs/setup.md](docs/setup.md) | Environnement de dev Windows + Mac |

@@ -4,7 +4,7 @@
 > But : savoir à tout moment où on en est, ce qui est fait, ce qui reste jusqu'au MVP,
 > et permettre à une autre personne de reprendre le projet.
 >
-> Dernière mise à jour : **01/10/2026** (S2)
+> Dernière mise à jour : **04/10/2026** (fin S2)
 
 ---
 
@@ -174,6 +174,12 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 ---
 
 ## 7. Journal des sessions
+
+### 04/10/2026
+- App relancée sur l'émulateur Android : OK (branche `feature/setup-mobile`).
+- Correction du tableau des ADR (statuts 0004 et 0006) sur `feature/setup-mobile`.
+- **MCP Supabase toujours non autorisé** (connexion OAuth à faire via `/mcp` dans un terminal `claude`).
+- Fin S2 : backend scaffoldé mais non testé sur Supabase ; **auth côté app (OTP + PIN) non commencée → glisse sur S3**.
 
 ### 01/10/2026 (2)
 - MCP Supabase : serveur détecté mais **authentification OAuth non faite** → non vérifié.

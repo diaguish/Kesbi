@@ -4,7 +4,7 @@
 > But : savoir à tout moment où on en est, ce qui est fait, ce qui reste jusqu'au MVP,
 > et permettre à une autre personne de reprendre le projet.
 >
-> Dernière mise à jour : **04/10/2026** (fin S2)
+> Dernière mise à jour : **05/10/2026** (S3)
 
 ---
 
@@ -124,10 +124,11 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | Priorité | Tâche | État |
 |---|---|---|
 | ✅ | Créer le projet Supabase — ref `ubpvgafdhjnsimffybnd` (`https://ubpvgafdhjnsimffybnd.supabase.co`) | ✅ 01/10 |
-| 🔴 | Autoriser le MCP Supabase (OAuth) — le serveur est vu mais **non authentifié** au 01/10 | ⬜ |
+| ✅ | Autoriser le MCP Supabase (OAuth) | ✅ 05/10 — actif à la prochaine session |
 | 🔴 | Supabase : vérifier le type de clés JWT (Settings → JWT Keys : asymétriques attendues) et récupérer la chaîne **Session pooler** | ⬜ |
-| 🔴 | Supabase : indiquer la région ; activer Auth → Phone ; ajouter un numéro de test (ex. `+221770000000` / `123456`) | ⬜ |
-| 🔴 | Choisir un fournisseur SMS et tester la réception sur Orange / Free / Expresso | ⬜ |
+| ✅ | Supabase : région **West EU (Ireland)** ; Auth → Phone activé (Twilio en valeurs provisoires) ; numéro de test `221770000000` / `123456` | ✅ 05/10 |
+| 🔴 | Vrais SMS : choisir le fournisseur, remplacer les valeurs Twilio provisoires, tester Orange / Free / Expresso — **avant le test fermé S6** | ⬜ |
+| 🟠 | Vérifier qu'Auth → Email est désactivé (ADR 0003) | ⬜ |
 | 🔴 | Ouvrir Apple Developer (99 $) et Play Console (25 $) — personnel ou organisation ? | ⬜ |
 | 🟠 | Créer le compte Render, puis New → Blueprint sur le repo (`render.yaml`) avec `DATABASE_URL` et `SUPABASE_URL` | ⬜ |
 | 🟠 | Tester `feature/setup-mobile` sur le Mac (iOS) puis ouvrir la PR vers `dev` | ⬜ |
@@ -151,6 +152,7 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | Review Apple (refus possible) | Publication iOS retardée | 1ère soumission en S8 |
 | Livraison des SMS OTP au Sénégal | Inscription impossible | Tester le fournisseur tôt ; numéros de test Supabase en dev |
 | Render gratuit en veille (30-50 s) | Mauvaise 1ère impression | Offre payante (~7 $/mois) en production |
+| Supabase plan FREE : projet mis en pause après 7 jours d'inactivité | App arrêtée en production | Plan Pro (25 $/mois) + projet de production séparé avant les premiers commerçants |
 | Charge : ~200 h pour tout le MVP | Retard global | Suivi hebdo dans ce document, délestage Rapports |
 | MCP Supabase avec accès écriture (`database`, `account`, `branching`) | Modification de données réelles / coûts | Projet Supabase **séparé** pour la production, jamais relié au MCP (ou `read_only=true`) |
 | Tables Django dans le schéma `public` exposé par l'API Supabase | Données lisibles avec la clé `anon` | `enable_rls()` obligatoire dans chaque migration (ADR 0007) |
@@ -174,6 +176,12 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 ---
 
 ## 7. Journal des sessions
+
+### 05/10/2026
+- Bilan S2 : ~50 % (fondations OK, auth app non commencée). S3 = rattrapage auth puis Encaissements.
+- Supabase : région West EU (Ireland), Phone activé avec numéro de test, Twilio en valeurs provisoires.
+- MCP Supabase autorisé (OAuth) — utilisable à partir de la prochaine session.
+- Rappel : `feature/setup-backend` **non poussée sur GitHub** (uniquement en local).
 
 ### 04/10/2026
 - App relancée sur l'émulateur Android : OK (branche `feature/setup-mobile`).

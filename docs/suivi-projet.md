@@ -36,7 +36,7 @@ Légende : ✅ fait · 🟡 en cours · ⬜ à faire · ❌ retiré
 | A6 | Création de la boutique (nom, activité) | ⬜ |
 | A7 | Soldes d'ouverture par compte (« Ignorer » = 0) ([ADR 0004](decisions/0004-comptes-et-soldes-ouverture.md)) | ⬜ |
 | A8 | Suppression du compte depuis l'app (exigence Apple + Google) | ⬜ |
-| A9 | Vérification du JWT Supabase par Django à chaque requête | 🟡 codé et testé (`feature/setup-backend`), à valider avec un vrai JWT |
+| A9 | Vérification du JWT Supabase par Django à chaque requête | ✅ validé de bout en bout avec un vrai JWT ES256 (05/10, `feature/setup-backend`) |
 
 ### 2.2 Encaissements — S3
 | # | Exigence | État |
@@ -137,7 +137,7 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | 🟡 | Protéger la branche `main` sur GitHub | ⬜ |
 
 ### Développement (prochaines étapes)
-1. `feature/setup-backend` (🟡 codé, 23 tests au vert) : migrer sur Supabase et tester avec un vrai JWT dès que le MCP / la chaîne de connexion sont disponibles, puis PR vers `dev`.
+1. `feature/setup-backend` (✅ validée sur Supabase le 05/10, poussée sur GitHub) : ajouter le 2ᵉ numéro de test `221770000001` pour le test d'isolation B6 de bout en bout, puis PR vers `dev`.
 2. `feature/auth-otp-pin` : écrans numéro → OTP → création PIN, déverrouillage, stockage sécurisé.
 3. Onboarding : création boutique, soldes d'ouverture, suppression de compte.
 
@@ -151,6 +151,7 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | Test fermé Play Store (12 testeurs / 14 jours) | Publication Android bloquée | Lancer en S6 au plus tard, recruter les testeurs dès maintenant |
 | Review Apple (refus possible) | Publication iOS retardée | 1ère soumission en S8 |
 | Livraison des SMS OTP au Sénégal | Inscription impossible | Tester le fournisseur tôt ; numéros de test Supabase en dev |
+| Le réseau habituel (box / Wi-Fi) bloque les ports Postgres 5432 / 6543 en sortie | Django local ne joint pas Supabase | Partage de connexion 4G pour `migrate` et les tests locaux ; Render n'est pas concerné |
 | Render gratuit en veille (30-50 s) | Mauvaise 1ère impression | Offre payante (~7 $/mois) en production |
 | Supabase plan FREE : projet mis en pause après 7 jours d'inactivité | App arrêtée en production | Plan Pro (25 $/mois) + projet de production séparé avant les premiers commerçants |
 | Charge : ~200 h pour tout le MVP | Retard global | Suivi hebdo dans ce document, délestage Rapports |
@@ -176,6 +177,19 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 ---
 
 ## 7. Journal des sessions
+
+### 05/10/2026 (2)
+- MCP Supabase **fonctionnel** (Postgres 17, ref `ubpvgafdhjnsimffybnd`).
+- `feature/setup-backend` **poussée sur GitHub**.
+- Projet en clés JWT asymétriques **ES256** (JWKS) : `SUPABASE_JWT_SECRET` inutile.
+- Réseau habituel : ports 5432/6543 bloqués en sortie → tests faits en **4G**.
+- `migrate` sur Supabase OK : `boutique`, `boutique_membre`, `django_migrations` avec RLS active, 0 politique.
+- Protocole `docs/validation-setup-backend.md` : B4 et B5 (9/9) OK avec un vrai JWT ; B6 : l'API REST Supabase
+  ne renvoie rien (`[]`) et refuse l'insertion (`42501`). Isolation entre 2 utilisateurs **non testée de bout en bout**
+  (2ᵉ numéro de test absent ; couverte par les tests automatiques).
+- Boutique de test (`6fbd10b2-…`) **laissée en base** (suppression refusée) — à supprimer plus tard.
+- Advisors Supabase : « RLS sans politique » (INFO, voulu) ; « protection mots de passe fuités » désactivée
+  (WARN, sans objet si la connexion par mot de passe est désactivée — ADR 0003, à vérifier).
 
 ### 05/10/2026
 - Bilan S2 : ~50 % (fondations OK, auth app non commencée). S3 = rattrapage auth puis Encaissements.

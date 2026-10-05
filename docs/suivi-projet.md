@@ -125,7 +125,7 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 |---|---|---|
 | ✅ | Créer le projet Supabase — ref `ubpvgafdhjnsimffybnd` (`https://ubpvgafdhjnsimffybnd.supabase.co`) | ✅ 01/10 |
 | ✅ | Autoriser le MCP Supabase (OAuth) | ✅ 05/10 — actif à la prochaine session |
-| 🔴 | Supabase : vérifier le type de clés JWT (Settings → JWT Keys : asymétriques attendues) et récupérer la chaîne **Session pooler** | ⬜ |
+| ✅ | Supabase : clés JWT (ES256 ✅) et chaîne **Session pooler** dans `backend/.env` | ✅ 05/10 |
 | ✅ | Supabase : région **West EU (Ireland)** ; Auth → Phone activé (Twilio en valeurs provisoires) ; numéro de test `221770000000` / `123456` | ✅ 05/10 |
 | 🔴 | Vrais SMS : choisir le fournisseur, remplacer les valeurs Twilio provisoires, tester Orange / Free / Expresso — **avant le test fermé S6** | ⬜ |
 | 🟠 | Vérifier qu'Auth → Email est désactivé (ADR 0003) | ⬜ |
@@ -135,9 +135,11 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | 🟡 | Police Poppins : télécharger ou autoriser le téléchargement | ⬜ |
 | 🟡 | Supprimer l'ancien dossier du repo dans OneDrive | ⬜ |
 | 🟡 | Protéger la branche `main` sur GitHub | ⬜ |
+| 🟡 | Supprimer les 2 boutiques de test en base (`Boutique Test A renommee`, `Boutique Test B (isolation)`) | ⬜ |
+| 🟡 | (Optionnel) 2ᵉ numéro de test `221770000001=123456` dans Auth → Phone | ⬜ |
 
 ### Développement (prochaines étapes)
-1. `feature/setup-backend` (✅ validée sur Supabase le 05/10, poussée sur GitHub) : ajouter le 2ᵉ numéro de test `221770000001` pour le test d'isolation B6 de bout en bout, puis PR vers `dev`.
+1. `feature/setup-backend` (✅ validée sur Supabase le 05/10, isolation comprise) : PR vers `dev`.
 2. `feature/auth-otp-pin` : écrans numéro → OTP → création PIN, déverrouillage, stockage sécurisé.
 3. Onboarding : création boutique, soldes d'ouverture, suppression de compte.
 
@@ -185,9 +187,11 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 - Réseau habituel : ports 5432/6543 bloqués en sortie → tests faits en **4G**.
 - `migrate` sur Supabase OK : `boutique`, `boutique_membre`, `django_migrations` avec RLS active, 0 politique.
 - Protocole `docs/validation-setup-backend.md` : B4 et B5 (9/9) OK avec un vrai JWT ; B6 : l'API REST Supabase
-  ne renvoie rien (`[]`) et refuse l'insertion (`42501`). Isolation entre 2 utilisateurs **non testée de bout en bout**
-  (2ᵉ numéro de test absent ; couverte par les tests automatiques).
+  ne renvoie rien (`[]`) et refuse l'insertion (`42501`). Isolation : voir ci-dessous.
 - Boutique de test (`6fbd10b2-…`) **laissée en base** (suppression refusée) — à supprimer plus tard.
+- Isolation testée de bout en bout : boutique B insérée en SQL pour un autre utilisateur ; avec le vrai JWT de A,
+  lecture / modification via `X-Boutique-Id` → 404, réutilisation de l'UUID → 409, `/me` ne liste que A (6/6 OK).
+  Le 2ᵉ numéro `221770000001` n'est pas un numéro de test (Supabase a tenté un vrai SMS Twilio → échec).
 - Advisors Supabase : « RLS sans politique » (INFO, voulu) ; « protection mots de passe fuités » désactivée
   (WARN, sans objet si la connexion par mot de passe est désactivée — ADR 0003, à vérifier).
 

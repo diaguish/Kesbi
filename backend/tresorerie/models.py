@@ -55,7 +55,9 @@ class Transaction(BoutiqueScopedModel):
     # Annulation : écriture de montant opposé qui neutralise `annulation_de`.
     annulation_de = models.OneToOneField(
         "self",
-        on_delete=models.PROTECT,
+        # RESTRICT : impossible de supprimer une écriture annulée seule, mais la
+        # suppression de toute la boutique (suppression de compte) reste possible.
+        on_delete=models.RESTRICT,
         null=True,
         blank=True,
         related_name="annulee_par",

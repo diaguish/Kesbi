@@ -231,3 +231,17 @@ class ContraintesBaseTests(TestCase):
     def test_montant_borne(self):
         with self.assertRaises(IntegrityError):
             self.creer(montant=10**12)
+
+    def test_suppression_de_la_boutique_emporte_ses_transactions(self):
+        originale = self.creer()
+        self.creer(montant=-1000, annulation_de=originale)
+        self.boutique.delete()
+        self.assertEqual(Transaction.objects.count(), 0)
+
+    def test_ecriture_annulee_non_supprimable_seule(self):
+        from django.db.models import RestrictedError
+
+        originale = self.creer()
+        self.creer(montant=-1000, annulation_de=originale)
+        with self.assertRaises(RestrictedError):
+            originale.delete()

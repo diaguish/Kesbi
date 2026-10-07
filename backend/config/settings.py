@@ -78,6 +78,9 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
 # signent en asymétrique et sont vérifiés via JWKS : laisser vide.
 SUPABASE_JWT_SECRET = os.environ.get("SUPABASE_JWT_SECRET", "")
 SUPABASE_JWT_AUDIENCE = "authenticated"
+# Clé secrète (`sb_secret_…`) : uniquement pour supprimer un utilisateur (suppression
+# de compte). Jamais dans l'app ni dans le dépôt.
+SUPABASE_SECRET_KEY = os.environ.get("SUPABASE_SECRET_KEY", "")
 
 # --- DRF ----------------------------------------------------------------------
 REST_FRAMEWORK = {

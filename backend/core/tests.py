@@ -67,3 +67,20 @@ class SupabaseJWTAuthenticationTests(SupabaseAPITestCase):
 
     def test_jeton_illisible(self):
         self.assertEqual(self.get_with("pas-un-jwt").status_code, 401)
+
+
+class SupabaseAdminTests(SupabaseAPITestCase):
+    def test_cle_secrete_obligatoire(self):
+        from core import supabase_admin
+
+        with self.settings(SUPABASE_SECRET_KEY=""):
+            with self.assertRaises(supabase_admin.SupabaseAdminError):
+                supabase_admin.delete_user(uuid.uuid4())
+
+    def test_en_tetes_selon_le_type_de_cle(self):
+        from core import supabase_admin
+
+        with self.settings(SUPABASE_SECRET_KEY="sb_secret_abc"):
+            self.assertNotIn("Authorization", supabase_admin._headers())
+        with self.settings(SUPABASE_SECRET_KEY="eyJhbGciOi.legacy"):
+            self.assertEqual(supabase_admin._headers()["Authorization"], "Bearer eyJhbGciOi.legacy")

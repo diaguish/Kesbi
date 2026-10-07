@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/accueil/accueil_screen.dart';
 import '../../features/auth/domain/phone_number.dart';
 import '../../features/auth/presentation/auth_status_provider.dart';
 import '../../features/auth/presentation/screens/otp_code_screen.dart';
@@ -9,6 +10,8 @@ import '../../features/auth/presentation/screens/phone_screen.dart';
 import '../../features/auth/presentation/screens/pin_setup_screen.dart';
 import '../../features/auth/presentation/screens/pin_unlock_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
+import '../../features/onboarding/presentation/onboarding_screen.dart';
+import '../../features/onboarding/presentation/profil_screen.dart';
 import '../widgets/main_shell.dart';
 import '../widgets/placeholder_screen.dart';
 import 'routes.dart';
@@ -40,11 +43,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: Routes.pinSetup, builder: (_, _) => const PinSetupScreen()),
       GoRoute(path: Routes.pin, builder: (_, _) => const PinUnlockScreen()),
-      GoRoute(
-        path: Routes.onboarding,
-        // TODO(feature/onboarding): création boutique + soldes d'ouverture.
-        builder: (_, _) => const PlaceholderScreen('Création boutique'),
-      ),
+      GoRoute(path: Routes.onboarding, builder: (_, _) => const OnboardingScreen()),
 
       // App principale : 4 onglets, chacun garde sa propre pile d'écrans.
       StatefulShellRoute.indexedStack(
@@ -53,7 +52,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(routes: [
             GoRoute(
               path: Routes.accueil,
-              builder: (_, _) => const PlaceholderScreen('Accueil'),
+              builder: (_, _) => const AccueilScreen(),
+              routes: [GoRoute(path: 'profil', builder: (_, _) => const ProfilScreen())],
             ),
           ]),
           StatefulShellBranch(routes: [

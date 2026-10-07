@@ -20,18 +20,10 @@ void main() {
     clock = FakeClock();
   });
 
-  Future<ProviderContainer> start({
-    List<Map<String, dynamic>> boutiques = const [],
-    bool apiOnline = true,
-  }) async {
+  Future<ProviderContainer> start({FakeBackend? backend, bool apiOnline = true}) async {
+    final fake = (backend ?? FakeBackend())..online = apiOnline;
     final container = ProviderContainer(
-      overrides: authOverrides(
-        store: store,
-        gateway: gateway,
-        boutiques: boutiques,
-        apiOnline: apiOnline,
-        clock: clock,
-      ),
+      overrides: authOverrides(store: store, gateway: gateway, backend: fake, clock: clock),
     );
     addTearDown(container.dispose);
     container.listen(authStatusProvider, (_, _) {});
@@ -59,7 +51,7 @@ void main() {
   });
 
   test('nouvel appareil d\'un commerçant existant → app directement', () async {
-    final c = await start(boutiques: [{'id': 'b1', 'nom': 'Boutique Awa'}]);
+    final c = await start(backend: FakeBackend.existant());
     await ctrl(c).verifyOtp(phone, FakeAuthGateway.validCode);
     await ctrl(c).createPin('482915');
     expect(c.read(authStatusProvider), AuthStatus.ready);
@@ -116,6 +108,26 @@ void main() {
 
     await ctrl(c).verifyOtp(phone, FakeAuthGateway.validCode);
     expect(c.read(authStatusProvider), AuthStatus.pinSetup);
+  });
+
+  test('boutique créée mais soldes non saisis → onboarding', () async {
+    final c = await start(backend: FakeBackend(boutiqueNom: 'Boutique Awa'));
+    await ctrl(c).verifyOtp(phone, FakeAuthGateway.validCode);
+    await ctrl(c).createPin('482915');
+    expect(c.read(authStatusProvider), AuthStatus.needsOnboarding);
+  });
+
+  test('compte supprimé → tout est effacé sur le téléphone', () async {
+    gateway.hasSession = true;
+    await PinRepository(store, iterations: 10, runHash: (c) => c()).setPin('482915');
+    store.values['onboarding_done'] = '1';
+    store.values['autre_donnee'] = 'x';
+    final c = await start();
+
+    await ctrl(c).accountDeleted();
+    expect(c.read(authStatusProvider), AuthStatus.signedOut);
+    expect(store.values, isEmpty);
+    expect(gateway.hasSession, isFalse);
   });
 
   test('session révoquée par Supabase → OTP', () async {

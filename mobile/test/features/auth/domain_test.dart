@@ -5,7 +5,7 @@ import 'package:kesbi/features/auth/domain/pin_rules.dart';
 void main() {
   group('PhoneNumber', () {
     test('accepte les mobiles sénégalais, avec ou sans indicatif', () {
-      for (final input in ['770000000', '77 000 00 00', '+221 77 000 00 00', '00221770000000']) {
+      for (final input in ['770000000', '77 000 00 00', '+221 77 000 00 00', '00221770000000', '221770000000']) {
         expect(PhoneNumber.tryParse(input)?.e164, '+221770000000', reason: input);
       }
       for (final prefix in ['70', '75', '76', '77', '78']) {

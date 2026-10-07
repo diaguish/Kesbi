@@ -26,3 +26,5 @@ services:
         sync: false
       - key: SUPABASE_JWT_SECRET
         sync: false
+      - key: SUPABASE_SECRET_KEY  # suppression de compte (API admin Supabase)
+        sync: false

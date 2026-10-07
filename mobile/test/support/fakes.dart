@@ -73,24 +73,88 @@ class FakeClock {
   DateTime call() => now;
 }
 
+/// Faux backend Django avec état : boutique, soldes d'ouverture, suppression de compte.
+class FakeBackend {
+  FakeBackend({this.boutiqueNom, Map<String, int>? ouvertures})
+      : ouvertures = ouvertures ?? {};
+
+  /// Commerçant existant, onboarding terminé.
+  FakeBackend.existant()
+      : boutiqueNom = 'Boutique Awa',
+        ouvertures = {'caisse': 200000, 'wave': 50000, 'orange_money': 0};
+
+  String? boutiqueNom;
+  final Map<String, int> ouvertures;
+  bool online = true;
+  bool compteSupprime = false;
+
+  /// Code HTTP à renvoyer pour la prochaine requête (simulation de panne).
+  int? prochaineErreur;
+  final requests = <String>[];
+
+  Future<http.Response> handle(http.Request request) async {
+    if (!online) throw http.ClientException('hors ligne');
+    final route = '${request.method} ${request.url.path}';
+    requests.add(route);
+    if (prochaineErreur case final code?) {
+      prochaineErreur = null;
+      return http.Response(jsonEncode({'detail': 'Erreur simulée'}), code);
+    }
+    final body = request.body.isEmpty ? <String, dynamic>{} : jsonDecode(request.body) as Map<String, dynamic>;
+    switch (route) {
+      case 'GET /api/me/':
+        return _json({
+          'id': 'u1',
+          'phone': '221770000000',
+          'boutiques': [
+            if (boutiqueNom != null)
+              {'id': 'b1', 'nom': boutiqueNom, 'ouverture_faite': ouvertures.length == 3},
+          ],
+        });
+      case 'POST /api/boutiques/':
+        if (boutiqueNom != null) return _json({'detail': 'Déjà une boutique.'}, 409);
+        boutiqueNom = body['nom'] as String;
+        return _json({'id': body['id'], 'nom': boutiqueNom}, 201);
+      case 'POST /api/transactions/':
+        final compte = body['compte'] as String;
+        if (body['type'] == 'ouverture' && ouvertures.containsKey(compte)) {
+          return _json({'detail': 'Ouverture déjà saisie.'}, 409);
+        }
+        ouvertures[compte] = body['montant'] as int;
+        return _json(body, 201);
+      case 'GET /api/comptes/':
+        final comptes = [
+          for (final c in ['caisse', 'wave', 'orange_money']) {'compte': c, 'solde': ouvertures[c] ?? 0},
+        ];
+        return _json({'comptes': comptes, 'total': ouvertures.values.fold(0, (a, b) => a + b)});
+      case 'DELETE /api/compte/':
+        boutiqueNom = null;
+        ouvertures.clear();
+        compteSupprime = true;
+        return http.Response('', 204);
+    }
+    return _json({'detail': 'Route inconnue : $route'}, 404);
+  }
+
+  static http.Response _json(Object body, [int status = 200]) => http.Response(
+        jsonEncode(body),
+        status,
+        headers: {'content-type': 'application/json; charset=utf-8'},
+      );
+}
+
 /// Overrides communs : aucun accès réseau, hachage du PIN rapide et synchrone.
 List<Override> authOverrides({
   required InMemorySecureStore store,
   required FakeAuthGateway gateway,
-  List<Map<String, dynamic>> boutiques = const [],
-  bool apiOnline = true,
+  FakeBackend? backend,
   FakeClock? clock,
 }) {
+  final fake = backend ?? FakeBackend();
   final api = ApiClient(
     baseUrl: 'http://api.test',
     token: gateway.accessToken,
-    client: MockClient((request) async {
-      if (!apiOnline) throw http.ClientException('hors ligne');
-      return http.Response(
-        jsonEncode({'id': 'u1', 'phone': '221770000000', 'boutiques': boutiques}),
-        200,
-      );
-    }),
+    client: MockClient(fake.handle),
   );
   return [
     secureStoreProvider.overrideWithValue(store),

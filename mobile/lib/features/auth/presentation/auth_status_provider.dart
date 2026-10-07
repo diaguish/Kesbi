@@ -87,6 +87,12 @@ class AuthController extends Notifier<AuthStatus> {
   /// « Code PIN oublié » ou déconnexion : on repasse par l'OTP.
   Future<void> signOut() => _reset();
 
+  /// Après la suppression du compte côté serveur : tout effacer sur le téléphone.
+  Future<void> accountDeleted() async {
+    await _store.deleteAll();
+    await _reset();
+  }
+
   /// Appelé par l'onboarding quand la boutique est créée.
   Future<void> markOnboarded() async {
     await _store.write(_onboardedKey, '1');
@@ -110,14 +116,16 @@ class AuthController extends Notifier<AuthStatus> {
     state = await _isOnboarded() ? AuthStatus.ready : AuthStatus.needsOnboarding;
   }
 
-  /// Mémorisé localement une fois la boutique connue, pour rester utilisable hors ligne.
+  /// Onboarding terminé = boutique créée **et** soldes d'ouverture saisis.
+  /// Mémorisé localement ensuite, pour que l'app s'ouvre hors ligne.
   Future<bool> _isOnboarded() async {
     if (await _store.read(_onboardedKey) == '1') return true;
     try {
       final me = await ref.read(apiClientProvider).getJson('/api/me/');
-      final hasBoutique = (me['boutiques'] as List).isNotEmpty;
-      if (hasBoutique) await _store.write(_onboardedKey, '1');
-      return hasBoutique;
+      final boutiques = (me['boutiques'] as List).cast<Map<String, dynamic>>();
+      final done = boutiques.isNotEmpty && boutiques.first['ouverture_faite'] == true;
+      if (done) await _store.write(_onboardedKey, '1');
+      return done;
     } catch (_) {
       // Hors ligne ou API injoignable : l'onboarding revérifiera.
       return false;

@@ -33,25 +33,25 @@ Légende : ✅ fait · 🟡 en cours · ⬜ à faire · ❌ retiré
 | A3 | Déverrouillage quotidien par PIN, fonctionne hors ligne | 🟡 Android OK (`feature/auth-otp-pin`), iOS à tester |
 | A4 | Nouvel appareil / PIN oublié / 5 PIN faux → retour OTP | 🟡 Android OK (`feature/auth-otp-pin`), iOS à tester |
 | A5 | Verrouillage automatique après quelques minutes en arrière-plan | 🟡 Android OK (`feature/auth-otp-pin`), iOS à tester |
-| A6 | Création de la boutique (nom, activité) | ⬜ |
-| A7 | Soldes d'ouverture par compte (« Ignorer » = 0) ([ADR 0004](decisions/0004-comptes-et-soldes-ouverture.md)) | ⬜ |
-| A8 | Suppression du compte depuis l'app (exigence Apple + Google) | ⬜ |
+| A6 | Création de la boutique (nom, activité) | 🟡 Android OK (`feature/onboarding`), iOS à tester |
+| A7 | Soldes d'ouverture par compte (« Ignorer » = 0) ([ADR 0004](decisions/0004-comptes-et-soldes-ouverture.md)) | 🟡 Android OK (`feature/onboarding`), iOS à tester |
+| A8 | Suppression du compte depuis l'app (exigence Apple + Google) | 🟡 codée et testée ; **suppression réelle non testée** (`SUPABASE_SECRET_KEY` à configurer) |
 | A9 | Vérification du JWT Supabase par Django à chaque requête | ✅ validé de bout en bout avec un vrai JWT ES256 (05/10, `feature/setup-backend`) |
 
 ### 2.2 Encaissements — S3
 | # | Exigence | État |
 |---|---|---|
-| E1 | Saisir un encaissement : montant, catégorie, compte crédité, date (défaut aujourd'hui), client, note | ⬜ |
-| E2 | Catégorie « Règlement créance » liée à un client existant (diminue le reste dû) | ⬜ |
-| E3 | Fonctionne hors ligne (UUID côté app, sync idempotente) ([ADR 0002](decisions/0002-schema-offline-first.md)) | ⬜ |
-| E4 | Correction = annulation + nouvelle écriture (pas de modification de montant) | ⬜ |
-| E5 | Historique des transactions avec filtres | ⬜ |
+| E1 | Saisir un encaissement : montant, catégorie, compte crédité, date (défaut aujourd'hui), client, note |🟡 Android OK (`feature/encaissements`), iOS à tester |
+| E2 | Catégorie « Règlement créance » liée à un client existant (diminue le reste dû) | ⬜ avec le module Créances (S7) |
+| E3 | Fonctionne hors ligne (UUID côté app, sync idempotente) ([ADR 0002](decisions/0002-schema-offline-first.md)) |🟡 Android OK (`feature/encaissements`), iOS à tester |
+| E4 | Correction = annulation + nouvelle écriture (pas de modification de montant) |🟡 Android OK (`feature/encaissements`), iOS à tester |
+| E5 | Historique des transactions avec filtres |🟡 Android OK (`feature/encaissements`), iOS à tester |
 
 ### 2.3 Dépenses — S4
 | # | Exigence | État |
 |---|---|---|
-| D1 | Saisir une dépense : montant, catégorie, compte débité, date, note | ⬜ |
-| D2 | Hors ligne + annulation, comme les encaissements | ⬜ |
+| D1 | Saisir une dépense : montant, catégorie, compte débité, date, note |🟡 Android OK (`feature/depenses`), iOS à tester |
+| D2 | Hors ligne + annulation, comme les encaissements |🟡 Android OK (`feature/depenses`), iOS à tester |
 
 ### 2.4 Dashboard — S5
 | # | Exigence | État |
@@ -69,7 +69,7 @@ Légende : ✅ fait · 🟡 en cours · ⬜ à faire · ❌ retiré
 | T1 | Comptes Caisse, Wave, Orange Money affichés séparément (Banque ❌ retirée du MVP) | ⬜ |
 | T2 | Transferts entre comptes + frais (= vraie dépense) | ⬜ |
 | T3 | « Corriger le solde » → transaction `ajustement` | ⬜ |
-| T4 | Soldes toujours calculés depuis les transactions | ⬜ |
+| T4 | Soldes toujours calculés depuis les transactions | 🟡 API faite (`feature/comptes-transactions`), écrans à faire |
 
 ### 2.6 Créances et relances — S7-S8
 | # | Exigence | État |
@@ -106,8 +106,8 @@ alerte « solde bas » · biométrie.
 | Semaine | Dates | Objectif | État |
 |---|---|---|---|
 | **S1-S2** | 21/09 → 04/10 | Infra, auth OTP + PIN, suppression de compte, comptes stores | 🟡 **En retard** : base faite, auth pas commencée |
-| S3 | 05/10 → 11/10 | Encaissements · 1er build iOS sur iPhone | ⬜ |
-| S4 | 12/10 → 18/10 | Dépenses · 1er build TestFlight | ⬜ |
+| S3 | 05/10 → 11/10 | Encaissements · 1er build iOS sur iPhone | 🟡 Auth, onboarding, encaissements codés et testés sur Android ; **iOS non testé** |
+| S4 | 12/10 → 18/10 | Dépenses · 1er build TestFlight |🟡 Dépenses faites le 07/10 (en avance) ; TestFlight bloqué (compte Apple reporté à novembre) |
 | S5 | 19/10 → 25/10 | Dashboard | ⬜ |
 | S6 | 26/10 → 01/11 | Trésorerie + transferts · **lancement test fermé Play Store** | ⬜ |
 | S7-S8 | 02/11 → 15/11 | Créances + FCM · **1ère soumission App Store (S8)** | ⬜ |
@@ -137,11 +137,16 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | 🟡 | Protéger la branche `main` sur GitHub | ⬜ |
 | 🟡 | Supprimer les 2 boutiques de test en base (`Boutique Test A renommee`, `Boutique Test B (isolation)`) | ⬜ |
 | 🟡 | (Optionnel) 2ᵉ numéro de test `221770000001=123456` dans Auth → Phone | ⬜ |
+| 🟠 | Ajouter `SUPABASE_SECRET_KEY` (clé `sb_secret_…`) dans `backend/.env` pour tester la suppression de compte réelle | ⬜ |
 
 ### Développement (prochaines étapes)
 1. ✅ `feature/setup-backend` fusionnée dans `dev` (PR #1, 07/10).
-2. 🟡 `feature/auth-otp-pin` (partie de `feature/setup-mobile`) : codée, 38 tests, validée sur émulateur Android. **Test iOS sur le Mac**, puis PR `setup-mobile → dev` **puis** PR `auth-otp-pin → dev`, dans cet ordre.
-3. Onboarding : création boutique, soldes d'ouverture, suppression de compte.
+2. 🟡 `feature/comptes-transactions` : API transactions + soldes (ADR 0009), 47 tests, migrée et testée sur Supabase. PR vers `dev` à ouvrir.
+3. 🟡 `feature/auth-otp-pin` (partie de `feature/setup-mobile`) : codée, 38 tests, validée sur émulateur Android. **Test iOS sur le Mac**, puis PR `setup-mobile → dev` **puis** PR `auth-otp-pin → dev`, dans cet ordre.
+4. 🟡 `feature/onboarding` (partie de auth + transactions) : codée, testée sur émulateur. PR après #3 et #5.
+5. 🟡 `feature/encaissements` : saisie, sqflite + sync hors ligne, annulation, historique (ADR 0011). 72 tests, testé sur émulateur.
+6. 🟡 `feature/depenses` : dépenses, garde-fou solde négatif, filtre par type. 80 tests, testé sur émulateur.
+7. ⬜ Avant publication : écran de lancement Android/iOS aux couleurs Kës Bi (logo Flutter par défaut aujourd'hui).
 
 ---
 
@@ -156,6 +161,7 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | Le réseau habituel (box / Wi-Fi) bloque les ports Postgres 5432 / 6543 en sortie | Django local ne joint pas Supabase | Partage de connexion 4G pour `migrate` et les tests locaux ; Render n'est pas concerné |
 | Render gratuit en veille (30-50 s) | Mauvaise 1ère impression | Offre payante (~7 $/mois) en production |
 | Supabase plan FREE : projet mis en pause après 7 jours d'inactivité | App arrêtée en production | Plan Pro (25 $/mois) + projet de production séparé avant les premiers commerçants |
+| **Démarches stores / SMS / Render reportées à novembre** (décision du 07/10) | Test fermé Play Store (14 j) et compte Apple (D-U-N-S) sans marge pour le 01/12 | Au minimum ouvrir la Play Console dès que possible (vérification d'identité) |
 | Charge : ~200 h pour tout le MVP | Retard global | Suivi hebdo dans ce document, délestage Rapports |
 | MCP Supabase avec accès écriture (`database`, `account`, `branching`) | Modification de données réelles / coûts | Projet Supabase **séparé** pour la production, jamais relié au MCP (ou `read_only=true`) |
 | Tables Django dans le schéma `public` exposé par l'API Supabase | Données lisibles avec la clé `anon` | `enable_rls()` obligatoire dans chaque migration (ADR 0007) |
@@ -175,6 +181,10 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | 28/09 | Identifiant d'app `com.kesbi.app` | [ADR 0005](decisions/0005-identifiant-application.md) |
 | 29/09 | Riverpod (sans codegen) + go_router | [ADR 0006](decisions/0006-riverpod-go-router.md) |
 | 28/09 | Repo déplacé hors OneDrive vers `C:\dev\Kesbi` | — |
+| 07/10 | Synchronisation hors ligne : sqflite, déclencheurs, gestion des erreurs | [ADR 0011](decisions/0011-synchronisation-hors-ligne.md) |
+| 07/10 | Suppression de compte : données + utilisateur Supabase dans une transaction SQL | [ADR 0010](decisions/0010-suppression-de-compte.md) |
+| 07/10 | Démarches administratives (stores, SMS, Render) reportées à novembre, priorité au code | — |
+| 07/10 | Transactions : montant signé, comptes sans table, annulation par écriture opposée | [ADR 0009](decisions/0009-modele-transactions.md) |
 | 07/10 | Auth mobile : session en stockage sécurisé, PIN PBKDF2 60 000 itérations, verrouillage 3 min, config `--dart-define-from-file` | [ADR 0008](decisions/0008-auth-mobile-implementation.md) |
 | 01/10 | Backend : Django 5.2 LTS sans contrib.auth, JWT Supabase via JWKS, isolation par boutique, RLS sur les tables Django | [ADR 0007](decisions/0007-backend-auth-jwt-et-isolation.md) |
 
@@ -190,6 +200,28 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 - **Testé sur émulateur Android avec le vrai Supabase + API locale (4G)** : OTP de test, création PIN,
   `GET /api/me/` → Accueil, redémarrage → PIN, mauvais PIN, déverrouillage **hors ligne**, PIN oublié → OTP.
 - Branche poussée sur GitHub. Reste : test iOS, puis PR dans l'ordre setup-mobile → auth.
+- PR #3 (app + auth → `dev`) et PR #4 (release `dev → main`, backend) ouvertes.
+- Décision : démarches stores / SMS / Render reportées à novembre (risque noté).
+- `feature/comptes-transactions` : API transactions (ADR 0009), 47 tests, migration appliquée sur Supabase,
+  test de bout en bout OK (ouvertures, encaissement, rejeu, dépense, annulation, soldes = 192 000 FCFA, isolation).
+  Transactions de test ajoutées à la boutique de test A.
+- PR #5 (`feature/comptes-transactions → dev`) ouverte ; correctif `RESTRICT` (suppression en cascade).
+- `feature/onboarding` : création boutique + soldes d'ouverture + Profil + suppression de compte (ADR 0010).
+  56 tests backend, 54 tests mobile. Testé sur émulateur avec l'API sur **SQLite local** (vrais JWT,
+  aucune donnée Supabase touchée) : onboarding complet → Accueil 350 000 FCFA, Profil, suppression
+  sans clé secrète → 503 et rien d'effacé. Bug trouvé : numéro Supabase sans « + » non reconnu (corrigé).
+- Ordre de fusion : #3 (app + auth) → #5 (transactions) → onboarding.
+- `feature/encaissements` (sur onboarding) : saisie, stockage local, synchro hors ligne, annulation,
+  historique (ADR 0011). 72 tests mobile. Émulateur : saisie en ligne, saisie **hors ligne** puis
+  synchronisation **automatique** au retour du réseau (soldes app = serveur), annulation.
+  Bugs trouvés et corrigés : rechargement en boucle de l'historique, clavier masquant « Enregistrer »
+  (risque de saisir 3 FCFA au lieu de 25 000), messages empilés, exception de synchro non rattrapée.
+- Ordre de fusion complet : #3 → #5 → onboarding → encaissements.
+- S4 démarrée en avance : `feature/depenses` (D1, D2). Écran de saisie commun encaissement / dépense,
+  confirmation si le compte deviendrait négatif, boutons Encaissement / Dépense côte à côte,
+  filtre par type dans l'historique. 80 tests ; émulateur : dépense, garde-fou, soldes app = serveur.
+- Piège noté : en PowerShell, `$env:DATABASE_URL=""` supprime la variable → Django lit `.env` (Supabase).
+- Ordre de fusion : #3 → #5 → onboarding → encaissements → dépenses.
 
 ### 05/10/2026 (2)
 - MCP Supabase **fonctionnel** (Postgres 17, ref `ubpvgafdhjnsimffybnd`).

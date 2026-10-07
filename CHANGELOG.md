@@ -11,3 +11,5 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions [Sem
 - App Flutter `mobile/` (Android + iOS), identifiant `com.kesbi.app` (ADR 0005),
   thème aux couleurs Kës Bi, formatage FCFA testé.
 - Riverpod + go_router (ADR 0006) : barre à 4 onglets, garde d'accès OTP / PIN / onboarding testée.
+- API Django `backend/` (ADR 0007) : vérification du JWT Supabase (JWKS / HS256), modèles
+  Boutique et Membre, isolation par boutique, RLS sur les tables créées, `render.yaml`.

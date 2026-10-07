@@ -1,0 +1,28 @@
+# Blueprint Render (https://render.com/docs/blueprint-spec) — API Django.
+# Les secrets (sync: false) se saisissent dans le tableau de bord Render, jamais ici.
+services:
+  - type: web
+    name: kesbi-api
+    runtime: python
+    rootDir: backend
+    plan: free  # passer en payant (~7 $/mois) avant la production : pas de mise en veille
+    region: frankfurt  # le plus proche de Dakar ; aligner avec la région Supabase
+    branch: main
+    autoDeploy: true
+    # Offre gratuite : pas de preDeployCommand, la migration se fait au build.
+    buildCommand: pip install -r requirements.txt && python manage.py migrate --noinput
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 60
+    healthCheckPath: /api/health/
+    envVars:
+      - key: DJANGO_DEBUG
+        value: "false"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_ALLOWED_HOSTS
+        value: ""  # RENDER_EXTERNAL_HOSTNAME est ajouté automatiquement
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_JWT_SECRET
+        sync: false

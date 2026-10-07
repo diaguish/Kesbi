@@ -4,7 +4,7 @@
 > But : savoir à tout moment où on en est, ce qui est fait, ce qui reste jusqu'au MVP,
 > et permettre à une autre personne de reprendre le projet.
 >
-> Dernière mise à jour : **01/10/2026** (S2)
+> Dernière mise à jour : **05/10/2026** (S3)
 
 ---
 
@@ -36,7 +36,7 @@ Légende : ✅ fait · 🟡 en cours · ⬜ à faire · ❌ retiré
 | A6 | Création de la boutique (nom, activité) | ⬜ |
 | A7 | Soldes d'ouverture par compte (« Ignorer » = 0) ([ADR 0004](decisions/0004-comptes-et-soldes-ouverture.md)) | ⬜ |
 | A8 | Suppression du compte depuis l'app (exigence Apple + Google) | ⬜ |
-| A9 | Vérification du JWT Supabase par Django à chaque requête | ⬜ |
+| A9 | Vérification du JWT Supabase par Django à chaque requête | ✅ validé de bout en bout avec un vrai JWT ES256 (05/10, `feature/setup-backend`) |
 
 ### 2.2 Encaissements — S3
 | # | Exigence | État |
@@ -124,18 +124,22 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | Priorité | Tâche | État |
 |---|---|---|
 | ✅ | Créer le projet Supabase — ref `ubpvgafdhjnsimffybnd` (`https://ubpvgafdhjnsimffybnd.supabase.co`) | ✅ 01/10 |
-| 🔴 | Redémarrer la session Claude Code et se connecter au MCP Supabase (`.mcp.json`) | ⬜ |
-| 🔴 | Supabase : indiquer la région ; activer Auth → Phone ; ajouter un numéro de test (ex. `+221770000000` / `123456`) | ⬜ |
-| 🔴 | Choisir un fournisseur SMS et tester la réception sur Orange / Free / Expresso | ⬜ |
+| ✅ | Autoriser le MCP Supabase (OAuth) | ✅ 05/10 — actif à la prochaine session |
+| ✅ | Supabase : clés JWT (ES256 ✅) et chaîne **Session pooler** dans `backend/.env` | ✅ 05/10 |
+| ✅ | Supabase : région **West EU (Ireland)** ; Auth → Phone activé (Twilio en valeurs provisoires) ; numéro de test `221770000000` / `123456` | ✅ 05/10 |
+| 🔴 | Vrais SMS : choisir le fournisseur, remplacer les valeurs Twilio provisoires, tester Orange / Free / Expresso — **avant le test fermé S6** | ⬜ |
+| 🟠 | Vérifier qu'Auth → Email est désactivé (ADR 0003) | ⬜ |
 | 🔴 | Ouvrir Apple Developer (99 $) et Play Console (25 $) — personnel ou organisation ? | ⬜ |
-| 🟠 | Créer le compte Render | ⬜ |
+| 🟠 | Créer le compte Render, puis New → Blueprint sur le repo (`render.yaml`) avec `DATABASE_URL` et `SUPABASE_URL` | ⬜ |
 | 🟠 | Tester `feature/setup-mobile` sur le Mac (iOS) puis ouvrir la PR vers `dev` | ⬜ |
 | 🟡 | Police Poppins : télécharger ou autoriser le téléchargement | ⬜ |
 | 🟡 | Supprimer l'ancien dossier du repo dans OneDrive | ⬜ |
 | 🟡 | Protéger la branche `main` sur GitHub | ⬜ |
+| 🟡 | Supprimer les 2 boutiques de test en base (`Boutique Test A renommee`, `Boutique Test B (isolation)`) | ⬜ |
+| 🟡 | (Optionnel) 2ᵉ numéro de test `221770000001=123456` dans Auth → Phone | ⬜ |
 
 ### Développement (prochaines étapes)
-1. `feature/setup-backend` : Django + DRF, vérification JWT Supabase, modèle Boutique, filtrage `boutique_id`, `.env.example`, config Render.
+1. `feature/setup-backend` (✅ validée sur Supabase le 05/10, isolation comprise) : PR vers `dev`.
 2. `feature/auth-otp-pin` : écrans numéro → OTP → création PIN, déverrouillage, stockage sécurisé.
 3. Onboarding : création boutique, soldes d'ouverture, suppression de compte.
 
@@ -149,9 +153,12 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | Test fermé Play Store (12 testeurs / 14 jours) | Publication Android bloquée | Lancer en S6 au plus tard, recruter les testeurs dès maintenant |
 | Review Apple (refus possible) | Publication iOS retardée | 1ère soumission en S8 |
 | Livraison des SMS OTP au Sénégal | Inscription impossible | Tester le fournisseur tôt ; numéros de test Supabase en dev |
+| Le réseau habituel (box / Wi-Fi) bloque les ports Postgres 5432 / 6543 en sortie | Django local ne joint pas Supabase | Partage de connexion 4G pour `migrate` et les tests locaux ; Render n'est pas concerné |
 | Render gratuit en veille (30-50 s) | Mauvaise 1ère impression | Offre payante (~7 $/mois) en production |
+| Supabase plan FREE : projet mis en pause après 7 jours d'inactivité | App arrêtée en production | Plan Pro (25 $/mois) + projet de production séparé avant les premiers commerçants |
 | Charge : ~200 h pour tout le MVP | Retard global | Suivi hebdo dans ce document, délestage Rapports |
 | MCP Supabase avec accès écriture (`database`, `account`, `branching`) | Modification de données réelles / coûts | Projet Supabase **séparé** pour la production, jamais relié au MCP (ou `read_only=true`) |
+| Tables Django dans le schéma `public` exposé par l'API Supabase | Données lisibles avec la clé `anon` | `enable_rls()` obligatoire dans chaque migration (ADR 0007) |
 | `AuthStatus.ready` provisoire dans l'app | App déverrouillée sans auth | Supprimé dans `feature/auth-otp-pin` — **ne jamais publier en l'état** |
 
 ---
@@ -167,10 +174,45 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | 28/09 | Identifiant d'app `com.kesbi.app` | [ADR 0005](decisions/0005-identifiant-application.md) |
 | 29/09 | Riverpod (sans codegen) + go_router | [ADR 0006](decisions/0006-riverpod-go-router.md) |
 | 28/09 | Repo déplacé hors OneDrive vers `C:\dev\Kesbi` | — |
+| 01/10 | Backend : Django 5.2 LTS sans contrib.auth, JWT Supabase via JWKS, isolation par boutique, RLS sur les tables Django | [ADR 0007](decisions/0007-backend-auth-jwt-et-isolation.md) |
 
 ---
 
 ## 7. Journal des sessions
+
+### 05/10/2026 (2)
+- MCP Supabase **fonctionnel** (Postgres 17, ref `ubpvgafdhjnsimffybnd`).
+- `feature/setup-backend` **poussée sur GitHub**.
+- Projet en clés JWT asymétriques **ES256** (JWKS) : `SUPABASE_JWT_SECRET` inutile.
+- Réseau habituel : ports 5432/6543 bloqués en sortie → tests faits en **4G**.
+- `migrate` sur Supabase OK : `boutique`, `boutique_membre`, `django_migrations` avec RLS active, 0 politique.
+- Protocole `docs/validation-setup-backend.md` : B4 et B5 (9/9) OK avec un vrai JWT ; B6 : l'API REST Supabase
+  ne renvoie rien (`[]`) et refuse l'insertion (`42501`). Isolation : voir ci-dessous.
+- Boutique de test (`6fbd10b2-…`) **laissée en base** (suppression refusée) — à supprimer plus tard.
+- Isolation testée de bout en bout : boutique B insérée en SQL pour un autre utilisateur ; avec le vrai JWT de A,
+  lecture / modification via `X-Boutique-Id` → 404, réutilisation de l'UUID → 409, `/me` ne liste que A (6/6 OK).
+  Le 2ᵉ numéro `221770000001` n'est pas un numéro de test (Supabase a tenté un vrai SMS Twilio → échec).
+- Advisors Supabase : « RLS sans politique » (INFO, voulu) ; « protection mots de passe fuités » désactivée
+  (WARN, sans objet si la connexion par mot de passe est désactivée — ADR 0003, à vérifier).
+
+### 05/10/2026
+- Bilan S2 : ~50 % (fondations OK, auth app non commencée). S3 = rattrapage auth puis Encaissements.
+- Supabase : région West EU (Ireland), Phone activé avec numéro de test, Twilio en valeurs provisoires.
+- MCP Supabase autorisé (OAuth) — utilisable à partir de la prochaine session.
+- Rappel : `feature/setup-backend` **non poussée sur GitHub** (uniquement en local).
+
+### 04/10/2026
+- App relancée sur l'émulateur Android : OK (branche `feature/setup-mobile`).
+- Correction du tableau des ADR (statuts 0004 et 0006) sur `feature/setup-mobile`.
+- **MCP Supabase toujours non autorisé** (connexion OAuth à faire via `/mcp` dans un terminal `claude`).
+- Fin S2 : backend scaffoldé mais non testé sur Supabase ; **auth côté app (OTP + PIN) non commencée → glisse sur S3**.
+
+### 01/10/2026 (2)
+- MCP Supabase : serveur détecté mais **authentification OAuth non faite** → non vérifié.
+- Branche `feature/setup-backend` : Django 5.2 LTS + DRF, vérification du JWT Supabase (JWKS / HS256),
+  modèles Boutique + Membre, création idempotente, `BoutiqueScopedMixin`, RLS automatique sur les
+  tables créées, `render.yaml`, `.env.example`, ADR 0007. 23 tests au vert (SQLite).
+- **Reprise** : autoriser le MCP, vérifier les clés JWT du projet, `migrate` sur Supabase, test de bout en bout.
 
 ### 01/10/2026
 - App relancée sur l'émulateur Android : OK.

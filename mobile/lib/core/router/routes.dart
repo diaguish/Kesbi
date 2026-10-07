@@ -5,6 +5,9 @@ import '../../features/auth/domain/auth_status.dart';
 abstract final class Routes {
   static const splash = '/';
   static const otp = '/otp';
+  static const otpCode = '/otp/code';
+  // Hors de `/pin/…` : un utilisateur verrouillé ne doit pas pouvoir recréer son PIN.
+  static const pinSetup = '/creer-pin';
   static const pin = '/pin';
   static const onboarding = '/onboarding';
 
@@ -24,6 +27,7 @@ String? authRedirect(AuthStatus status, String location) {
   final target = switch (status) {
     AuthStatus.unknown => Routes.splash,
     AuthStatus.signedOut => Routes.otp,
+    AuthStatus.pinSetup => Routes.pinSetup,
     AuthStatus.locked => Routes.pin,
     AuthStatus.needsOnboarding => Routes.onboarding,
     AuthStatus.ready => null,
@@ -34,7 +38,13 @@ String? authRedirect(AuthStatus status, String location) {
   }
 
   // Utilisateur prêt : il ne doit plus voir les écrans d'accès.
-  const accessScreens = [Routes.splash, Routes.otp, Routes.pin, Routes.onboarding];
+  const accessScreens = [
+    Routes.splash,
+    Routes.otp,
+    Routes.pinSetup,
+    Routes.pin,
+    Routes.onboarding,
+  ];
   final onAccessScreen = accessScreens.any(
     (s) => location == s || (s != Routes.splash && location.startsWith('$s/')),
   );

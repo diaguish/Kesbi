@@ -10,6 +10,21 @@ void main() {
       expect(authRedirect(AuthStatus.signedOut, Routes.otp), isNull);
     });
 
+    test('OTP validé sans PIN → création du PIN uniquement', () {
+      expect(authRedirect(AuthStatus.pinSetup, Routes.accueil), Routes.pinSetup);
+      expect(authRedirect(AuthStatus.pinSetup, Routes.pin), Routes.pinSetup);
+      expect(authRedirect(AuthStatus.pinSetup, Routes.pinSetup), isNull);
+    });
+
+    test('non connecté → saisie du code SMS autorisée', () {
+      expect(authRedirect(AuthStatus.signedOut, Routes.otpCode), isNull);
+    });
+
+    test('verrouillé → impossible de recréer son PIN sans OTP', () {
+      expect(authRedirect(AuthStatus.locked, Routes.pinSetup), Routes.pin);
+      expect(authRedirect(AuthStatus.locked, Routes.otpCode), Routes.pin);
+    });
+
     test('verrouillé → PIN, aucun écran de l\'app accessible', () {
       expect(authRedirect(AuthStatus.locked, Routes.accueil), Routes.pin);
       expect(authRedirect(AuthStatus.locked, Routes.tresorerie), Routes.pin);
@@ -33,6 +48,8 @@ void main() {
       expect(authRedirect(AuthStatus.ready, Routes.pin), Routes.accueil);
       expect(authRedirect(AuthStatus.ready, Routes.otp), Routes.accueil);
       expect(authRedirect(AuthStatus.ready, Routes.splash), Routes.accueil);
+      expect(authRedirect(AuthStatus.ready, Routes.pinSetup), Routes.accueil);
+      expect(authRedirect(AuthStatus.ready, Routes.otpCode), Routes.accueil);
     });
   });
 }

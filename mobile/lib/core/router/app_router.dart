@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/domain/phone_number.dart';
 import '../../features/auth/presentation/auth_status_provider.dart';
+import '../../features/auth/presentation/screens/otp_code_screen.dart';
+import '../../features/auth/presentation/screens/phone_screen.dart';
+import '../../features/auth/presentation/screens/pin_setup_screen.dart';
+import '../../features/auth/presentation/screens/pin_unlock_screen.dart';
+import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../widgets/main_shell.dart';
 import '../widgets/placeholder_screen.dart';
 import 'routes.dart';
@@ -19,21 +25,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) =>
         authRedirect(authChanges.value, state.matchedLocation),
     routes: [
-      // Écrans d'accès (remplacés par la feature auth).
-      GoRoute(
-        path: Routes.splash,
-        builder: (_, _) => const PlaceholderScreen('Chargement'),
-      ),
+      // Écrans d'accès (ADR 0003).
+      GoRoute(path: Routes.splash, builder: (_, _) => const SplashScreen()),
       GoRoute(
         path: Routes.otp,
-        builder: (_, _) => const PlaceholderScreen('Connexion OTP'),
+        builder: (_, _) => const PhoneScreen(),
+        routes: [
+          GoRoute(
+            path: 'code',
+            redirect: (_, state) => state.extra is PhoneNumber ? null : Routes.otp,
+            builder: (_, state) => OtpCodeScreen(phone: state.extra! as PhoneNumber),
+          ),
+        ],
       ),
-      GoRoute(
-        path: Routes.pin,
-        builder: (_, _) => const PlaceholderScreen('Code PIN'),
-      ),
+      GoRoute(path: Routes.pinSetup, builder: (_, _) => const PinSetupScreen()),
+      GoRoute(path: Routes.pin, builder: (_, _) => const PinUnlockScreen()),
       GoRoute(
         path: Routes.onboarding,
+        // TODO(feature/onboarding): création boutique + soldes d'ouverture.
         builder: (_, _) => const PlaceholderScreen('Création boutique'),
       ),
 

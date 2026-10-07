@@ -12,6 +12,7 @@ Une décision n'est jamais modifiée après acceptation : on crée un nouvel ADR
 | [0005](0005-identifiant-application.md) | Identifiant de l'application : `com.kesbi.app` | Accepté |
 | [0006](0006-riverpod-go-router.md) | Gestion d'état Riverpod, navigation go_router | Accepté |
 | [0007](0007-backend-auth-jwt-et-isolation.md) | Backend : JWT Supabase et isolation par boutique | Accepté |
+| [0008](0008-auth-mobile-implementation.md) | Auth mobile : session sécurisée, hachage du PIN, verrouillage | Accepté |
 
 ## Modèle
 ```markdown

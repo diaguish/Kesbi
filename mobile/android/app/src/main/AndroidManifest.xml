@@ -1,6 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Supabase Auth et API Django (absent du gabarit Flutter hors debug). -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="Kës Bi"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -13,3 +13,6 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions [Sem
 - Riverpod + go_router (ADR 0006) : barre à 4 onglets, garde d'accès OTP / PIN / onboarding testée.
 - API Django `backend/` (ADR 0007) : vérification du JWT Supabase (JWKS / HS256), modèles
   Boutique et Membre, isolation par boutique, RLS sur les tables créées, `render.yaml`.
+- Auth mobile (ADR 0003, 0008) : numéro +221 → OTP SMS Supabase → création du PIN, déverrouillage
+  hors ligne, 5 erreurs → OTP, « PIN oublié », verrouillage après 3 min en arrière-plan,
+  session dans le stockage sécurisé.

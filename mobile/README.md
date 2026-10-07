@@ -3,10 +3,15 @@
 Android + iOS. Identifiant store : **`com.kesbi.app`** ([ADR 0005](../docs/decisions/0005-identifiant-application.md)).
 
 ## Lancer
+La configuration (Supabase, API) est passée au build ([ADR 0008](../docs/decisions/0008-auth-mobile-implementation.md)) :
 ```bash
+cp env/dev.example.json env/dev.json   # puis renseigner la clé publishable (fichier ignoré par git)
 flutter pub get
-flutter run
+flutter run --dart-define-from-file=env/dev.json
 ```
+- Connexion de test : numéro `77 000 00 00`, code SMS `123456` (numéro de test Supabase, aucun SMS envoyé).
+- L'API Django doit tourner (`runserver 0.0.0.0:8000`) pour savoir si la boutique existe ;
+  sans elle, l'app passe à l'onboarding.
 Tests et analyse (obligatoires avant chaque PR) :
 ```bash
 flutter analyze

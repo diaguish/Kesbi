@@ -6,6 +6,9 @@ enum AuthStatus {
   /// Aucune session : parcours numéro → OTP.
   signedOut,
 
+  /// OTP validé, aucun PIN sur cet appareil : création du PIN.
+  pinSetup,
+
   /// Session présente mais app verrouillée : saisie du PIN.
   locked,
 

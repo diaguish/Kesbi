@@ -50,8 +50,8 @@ Légende : ✅ fait · 🟡 en cours · ⬜ à faire · ❌ retiré
 ### 2.3 Dépenses — S4
 | # | Exigence | État |
 |---|---|---|
-| D1 | Saisir une dépense : montant, catégorie, compte débité, date, note | ⬜ |
-| D2 | Hors ligne + annulation, comme les encaissements | ⬜ |
+| D1 | Saisir une dépense : montant, catégorie, compte débité, date, note |🟡 Android OK (`feature/depenses`), iOS à tester |
+| D2 | Hors ligne + annulation, comme les encaissements |🟡 Android OK (`feature/depenses`), iOS à tester |
 
 ### 2.4 Dashboard — S5
 | # | Exigence | État |
@@ -107,7 +107,7 @@ alerte « solde bas » · biométrie.
 |---|---|---|---|
 | **S1-S2** | 21/09 → 04/10 | Infra, auth OTP + PIN, suppression de compte, comptes stores | 🟡 **En retard** : base faite, auth pas commencée |
 | S3 | 05/10 → 11/10 | Encaissements · 1er build iOS sur iPhone | 🟡 Auth, onboarding, encaissements codés et testés sur Android ; **iOS non testé** |
-| S4 | 12/10 → 18/10 | Dépenses · 1er build TestFlight | ⬜ |
+| S4 | 12/10 → 18/10 | Dépenses · 1er build TestFlight |🟡 Dépenses faites le 07/10 (en avance) ; TestFlight bloqué (compte Apple reporté à novembre) |
 | S5 | 19/10 → 25/10 | Dashboard | ⬜ |
 | S6 | 26/10 → 01/11 | Trésorerie + transferts · **lancement test fermé Play Store** | ⬜ |
 | S7-S8 | 02/11 → 15/11 | Créances + FCM · **1ère soumission App Store (S8)** | ⬜ |
@@ -145,7 +145,8 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 3. 🟡 `feature/auth-otp-pin` (partie de `feature/setup-mobile`) : codée, 38 tests, validée sur émulateur Android. **Test iOS sur le Mac**, puis PR `setup-mobile → dev` **puis** PR `auth-otp-pin → dev`, dans cet ordre.
 4. 🟡 `feature/onboarding` (partie de auth + transactions) : codée, testée sur émulateur. PR après #3 et #5.
 5. 🟡 `feature/encaissements` : saisie, sqflite + sync hors ligne, annulation, historique (ADR 0011). 72 tests, testé sur émulateur.
-6. ⬜ S4 : Dépenses (réutilise le même mécanisme) + 1er build TestFlight.
+6. 🟡 `feature/depenses` : dépenses, garde-fou solde négatif, filtre par type. 80 tests, testé sur émulateur.
+7. ⬜ Avant publication : écran de lancement Android/iOS aux couleurs Kës Bi (logo Flutter par défaut aujourd'hui).
 
 ---
 
@@ -216,6 +217,11 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
   Bugs trouvés et corrigés : rechargement en boucle de l'historique, clavier masquant « Enregistrer »
   (risque de saisir 3 FCFA au lieu de 25 000), messages empilés, exception de synchro non rattrapée.
 - Ordre de fusion complet : #3 → #5 → onboarding → encaissements.
+- S4 démarrée en avance : `feature/depenses` (D1, D2). Écran de saisie commun encaissement / dépense,
+  confirmation si le compte deviendrait négatif, boutons Encaissement / Dépense côte à côte,
+  filtre par type dans l'historique. 80 tests ; émulateur : dépense, garde-fou, soldes app = serveur.
+- Piège noté : en PowerShell, `$env:DATABASE_URL=""` supprime la variable → Django lit `.env` (Supabase).
+- Ordre de fusion : #3 → #5 → onboarding → encaissements → dépenses.
 
 ### 05/10/2026 (2)
 - MCP Supabase **fonctionnel** (Postgres 17, ref `ubpvgafdhjnsimffybnd`).

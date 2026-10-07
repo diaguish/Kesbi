@@ -43,7 +43,15 @@ cp .env.example .env                            # puis DJANGO_DEBUG=true pour le
 - `gunicorn` ne tourne pas sous Windows : en local, utiliser `runserver`.
 
 ## Mobile
-_À compléter lors du scaffold Flutter._
+Voir [mobile/README.md](../mobile/README.md).
+```bash
+cd mobile
+flutter pub get
+flutter test
+flutter run
+```
+Sur Mac, avant le premier `flutter run` iOS : ouvrir `mobile/ios/Runner.xcworkspace`
+dans Xcode, onglet *Signing & Capabilities*, choisir ton équipe Apple Developer.
 
 ## Secrets
 Chaque dossier fournit un `.env.example`. Copier en `.env` et remplir.

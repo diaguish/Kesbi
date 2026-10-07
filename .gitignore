@@ -36,6 +36,9 @@ mobile/ios/Flutter/flutter_export_environment.sh
 mobile/ios/Runner.xcworkspace/xcuserdata/
 mobile/ios/Runner.xcodeproj/xcuserdata/
 mobile/ios/build/
+# Configuration locale de l'app (--dart-define-from-file), voir mobile/env/dev.example.json
+mobile/env/*.json
+!mobile/env/*.example.json
 
 # ===== Python / Django =====
 __pycache__/

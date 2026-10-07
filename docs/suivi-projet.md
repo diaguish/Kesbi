@@ -165,7 +165,7 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | Charge : ~200 h pour tout le MVP | Retard global | Suivi hebdo dans ce document, délestage Rapports |
 | MCP Supabase avec accès écriture (`database`, `account`, `branching`) | Modification de données réelles / coûts | Projet Supabase **séparé** pour la production, jamais relié au MCP (ou `read_only=true`) |
 | Tables Django dans le schéma `public` exposé par l'API Supabase | Données lisibles avec la clé `anon` | `enable_rls()` obligatoire dans chaque migration (ADR 0007) |
-| `AuthStatus.ready` provisoire dans `feature/setup-mobile` | App déverrouillée sans auth | Supprimé dans `feature/auth-otp-pin` : fusionner les deux PR ensemble, **ne jamais publier setup-mobile seule** |
+| **Code fusionné dans `dev` sans test iOS** (exception à la règle n°7, décision du 07/10) | Bug iOS découvert tard | Test iOS sur `dev` dès que le Mac est disponible ; correctifs en `fix/*` |
 | Émulateur Android : écran blanc + crash Impeller (GPU émulé) après coupure réseau | Faux bug lors des tests | Redémarrer l'émulateur (pas un bug de l'app) |
 
 ---
@@ -181,6 +181,7 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | 28/09 | Identifiant d'app `com.kesbi.app` | [ADR 0005](decisions/0005-identifiant-application.md) |
 | 29/09 | Riverpod (sans codegen) + go_router | [ADR 0006](decisions/0006-riverpod-go-router.md) |
 | 28/09 | Repo déplacé hors OneDrive vers `C:\dev\Kesbi` | — |
+| 07/10 | Fusion dans `dev` des PR #3, #5, #7, #8, #6 **sans test iOS** (exception assumée à la règle n°7) | — |
 | 07/10 | Synchronisation hors ligne : sqflite, déclencheurs, gestion des erreurs | [ADR 0011](decisions/0011-synchronisation-hors-ligne.md) |
 | 07/10 | Suppression de compte : données + utilisateur Supabase dans une transaction SQL | [ADR 0010](decisions/0010-suppression-de-compte.md) |
 | 07/10 | Démarches administratives (stores, SMS, Render) reportées à novembre, priorité au code | — |
@@ -222,6 +223,10 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
   filtre par type dans l'historique. 80 tests ; émulateur : dépense, garde-fou, soldes app = serveur.
 - Piège noté : en PowerShell, `$env:DATABASE_URL=""` supprime la variable → Django lit `.env` (Supabase).
 - Ordre de fusion : #3 → #5 → onboarding → encaissements → dépenses.
+- PR #7 (onboarding) et #8 (encaissements) ouvertes, puis **fusion dans `dev` de #3, #5, #7, #8, #6**
+  (demande de Diago, sans test iOS — exception à la règle n°7). Conflits CHANGELOG / index ADR résolus
+  en gardant les deux côtés. `dev` vérifié : 56 tests backend, 80 tests mobile, analyse sans alerte.
+- **À faire en priorité** : test iOS complet sur `dev` (auth, onboarding, encaissements, dépenses).
 
 ### 05/10/2026 (2)
 - MCP Supabase **fonctionnel** (Postgres 17, ref `ubpvgafdhjnsimffybnd`).

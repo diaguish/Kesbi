@@ -16,3 +16,5 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions [Sem
 - Auth mobile (ADR 0003, 0008) : numéro +221 → OTP SMS Supabase → création du PIN, déverrouillage
   hors ligne, 5 erreurs → OTP, « PIN oublié », verrouillage après 3 min en arrière-plan,
   session dans le stockage sécurisé.
+- API transactions (ADR 0009) : comptes Caisse / Wave / Orange Money, transactions à montant signé,
+  création idempotente, annulation, soldes calculés, historique filtrable et paginé.

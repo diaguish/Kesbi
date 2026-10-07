@@ -4,7 +4,7 @@
 > But : savoir à tout moment où on en est, ce qui est fait, ce qui reste jusqu'au MVP,
 > et permettre à une autre personne de reprendre le projet.
 >
-> Dernière mise à jour : **05/10/2026** (S3)
+> Dernière mise à jour : **07/10/2026** (S3)
 
 ---
 
@@ -28,11 +28,11 @@ Légende : ✅ fait · 🟡 en cours · ⬜ à faire · ❌ retiré
 ### 2.1 Authentification et compte — S1-S2 ([ADR 0003](decisions/0003-authentification-otp-pin.md))
 | # | Exigence | État |
 |---|---|---|
-| A1 | Inscription par numéro de téléphone (+221) et OTP SMS | ⬜ |
-| A2 | Création d'un PIN à 6 chiffres, stocké haché sur le téléphone uniquement | ⬜ |
-| A3 | Déverrouillage quotidien par PIN, fonctionne hors ligne | ⬜ |
-| A4 | Nouvel appareil / PIN oublié / 5 PIN faux → retour OTP | ⬜ |
-| A5 | Verrouillage automatique après quelques minutes en arrière-plan | ⬜ |
+| A1 | Inscription par numéro de téléphone (+221) et OTP SMS | 🟡 Android OK (`feature/auth-otp-pin`), iOS à tester |
+| A2 | Création d'un PIN à 6 chiffres, stocké haché sur le téléphone uniquement | 🟡 Android OK (`feature/auth-otp-pin`), iOS à tester |
+| A3 | Déverrouillage quotidien par PIN, fonctionne hors ligne | 🟡 Android OK (`feature/auth-otp-pin`), iOS à tester |
+| A4 | Nouvel appareil / PIN oublié / 5 PIN faux → retour OTP | 🟡 Android OK (`feature/auth-otp-pin`), iOS à tester |
+| A5 | Verrouillage automatique après quelques minutes en arrière-plan | 🟡 Android OK (`feature/auth-otp-pin`), iOS à tester |
 | A6 | Création de la boutique (nom, activité) | ⬜ |
 | A7 | Soldes d'ouverture par compte (« Ignorer » = 0) ([ADR 0004](decisions/0004-comptes-et-soldes-ouverture.md)) | ⬜ |
 | A8 | Suppression du compte depuis l'app (exigence Apple + Google) | ⬜ |
@@ -139,8 +139,8 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | 🟡 | (Optionnel) 2ᵉ numéro de test `221770000001=123456` dans Auth → Phone | ⬜ |
 
 ### Développement (prochaines étapes)
-1. `feature/setup-backend` (✅ validée sur Supabase le 05/10, isolation comprise) : PR vers `dev`.
-2. `feature/auth-otp-pin` : écrans numéro → OTP → création PIN, déverrouillage, stockage sécurisé.
+1. ✅ `feature/setup-backend` fusionnée dans `dev` (PR #1, 07/10).
+2. 🟡 `feature/auth-otp-pin` (partie de `feature/setup-mobile`) : codée, 38 tests, validée sur émulateur Android. **Test iOS sur le Mac**, puis PR `setup-mobile → dev` **puis** PR `auth-otp-pin → dev`, dans cet ordre.
 3. Onboarding : création boutique, soldes d'ouverture, suppression de compte.
 
 ---
@@ -159,7 +159,8 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | Charge : ~200 h pour tout le MVP | Retard global | Suivi hebdo dans ce document, délestage Rapports |
 | MCP Supabase avec accès écriture (`database`, `account`, `branching`) | Modification de données réelles / coûts | Projet Supabase **séparé** pour la production, jamais relié au MCP (ou `read_only=true`) |
 | Tables Django dans le schéma `public` exposé par l'API Supabase | Données lisibles avec la clé `anon` | `enable_rls()` obligatoire dans chaque migration (ADR 0007) |
-| `AuthStatus.ready` provisoire dans l'app | App déverrouillée sans auth | Supprimé dans `feature/auth-otp-pin` — **ne jamais publier en l'état** |
+| `AuthStatus.ready` provisoire dans `feature/setup-mobile` | App déverrouillée sans auth | Supprimé dans `feature/auth-otp-pin` : fusionner les deux PR ensemble, **ne jamais publier setup-mobile seule** |
+| Émulateur Android : écran blanc + crash Impeller (GPU émulé) après coupure réseau | Faux bug lors des tests | Redémarrer l'émulateur (pas un bug de l'app) |
 
 ---
 
@@ -174,11 +175,21 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | 28/09 | Identifiant d'app `com.kesbi.app` | [ADR 0005](decisions/0005-identifiant-application.md) |
 | 29/09 | Riverpod (sans codegen) + go_router | [ADR 0006](decisions/0006-riverpod-go-router.md) |
 | 28/09 | Repo déplacé hors OneDrive vers `C:\dev\Kesbi` | — |
+| 07/10 | Auth mobile : session en stockage sécurisé, PIN PBKDF2 60 000 itérations, verrouillage 3 min, config `--dart-define-from-file` | [ADR 0008](decisions/0008-auth-mobile-implementation.md) |
 | 01/10 | Backend : Django 5.2 LTS sans contrib.auth, JWT Supabase via JWKS, isolation par boutique, RLS sur les tables Django | [ADR 0007](decisions/0007-backend-auth-jwt-et-isolation.md) |
 
 ---
 
 ## 7. Journal des sessions
+
+### 07/10/2026
+- PR #1 `feature/setup-backend → dev` ouverte (GitHub CLI installé, jeton limité au dépôt Kesbi) et **fusionnée**.
+- Branche `feature/auth-otp-pin` créée depuis `feature/setup-mobile` (+ `dev`) — test iOS reporté (choix de Diago).
+- Auth mobile codée : numéro → OTP → PIN, déverrouillage, PIN oublié, 5 erreurs, verrouillage auto (ADR 0008).
+  38 tests au vert. Bug trouvé par les tests et corrigé (lecture de l'état avant initialisation).
+- **Testé sur émulateur Android avec le vrai Supabase + API locale (4G)** : OTP de test, création PIN,
+  `GET /api/me/` → Accueil, redémarrage → PIN, mauvais PIN, déverrouillage **hors ligne**, PIN oublié → OTP.
+- Branche poussée sur GitHub. Reste : test iOS, puis PR dans l'ordre setup-mobile → auth.
 
 ### 05/10/2026 (2)
 - MCP Supabase **fonctionnel** (Postgres 17, ref `ubpvgafdhjnsimffybnd`).

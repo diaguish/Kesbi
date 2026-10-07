@@ -33,9 +33,9 @@ Légende : ✅ fait · 🟡 en cours · ⬜ à faire · ❌ retiré
 | A3 | Déverrouillage quotidien par PIN, fonctionne hors ligne | 🟡 Android OK (`feature/auth-otp-pin`), iOS à tester |
 | A4 | Nouvel appareil / PIN oublié / 5 PIN faux → retour OTP | 🟡 Android OK (`feature/auth-otp-pin`), iOS à tester |
 | A5 | Verrouillage automatique après quelques minutes en arrière-plan | 🟡 Android OK (`feature/auth-otp-pin`), iOS à tester |
-| A6 | Création de la boutique (nom, activité) | ⬜ |
-| A7 | Soldes d'ouverture par compte (« Ignorer » = 0) ([ADR 0004](decisions/0004-comptes-et-soldes-ouverture.md)) | ⬜ |
-| A8 | Suppression du compte depuis l'app (exigence Apple + Google) | ⬜ |
+| A6 | Création de la boutique (nom, activité) | 🟡 Android OK (`feature/onboarding`), iOS à tester |
+| A7 | Soldes d'ouverture par compte (« Ignorer » = 0) ([ADR 0004](decisions/0004-comptes-et-soldes-ouverture.md)) | 🟡 Android OK (`feature/onboarding`), iOS à tester |
+| A8 | Suppression du compte depuis l'app (exigence Apple + Google) | 🟡 codée et testée ; **suppression réelle non testée** (`SUPABASE_SECRET_KEY` à configurer) |
 | A9 | Vérification du JWT Supabase par Django à chaque requête | ✅ validé de bout en bout avec un vrai JWT ES256 (05/10, `feature/setup-backend`) |
 
 ### 2.2 Encaissements — S3
@@ -137,12 +137,13 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | 🟡 | Protéger la branche `main` sur GitHub | ⬜ |
 | 🟡 | Supprimer les 2 boutiques de test en base (`Boutique Test A renommee`, `Boutique Test B (isolation)`) | ⬜ |
 | 🟡 | (Optionnel) 2ᵉ numéro de test `221770000001=123456` dans Auth → Phone | ⬜ |
+| 🟠 | Ajouter `SUPABASE_SECRET_KEY` (clé `sb_secret_…`) dans `backend/.env` pour tester la suppression de compte réelle | ⬜ |
 
 ### Développement (prochaines étapes)
 1. ✅ `feature/setup-backend` fusionnée dans `dev` (PR #1, 07/10).
 2. 🟡 `feature/comptes-transactions` : API transactions + soldes (ADR 0009), 47 tests, migrée et testée sur Supabase. PR vers `dev` à ouvrir.
 3. 🟡 `feature/auth-otp-pin` (partie de `feature/setup-mobile`) : codée, 38 tests, validée sur émulateur Android. **Test iOS sur le Mac**, puis PR `setup-mobile → dev` **puis** PR `auth-otp-pin → dev`, dans cet ordre.
-4. ⬜ Onboarding (app) : création boutique, soldes d'ouverture, suppression de compte.
+4. 🟡 `feature/onboarding` (partie de auth + transactions) : codée, testée sur émulateur. PR après #3 et #5.
 5. ⬜ Encaissements (app) : saisie, sqflite + sync, annulation, historique.
 
 ---
@@ -178,6 +179,7 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | 28/09 | Identifiant d'app `com.kesbi.app` | [ADR 0005](decisions/0005-identifiant-application.md) |
 | 29/09 | Riverpod (sans codegen) + go_router | [ADR 0006](decisions/0006-riverpod-go-router.md) |
 | 28/09 | Repo déplacé hors OneDrive vers `C:\dev\Kesbi` | — |
+| 07/10 | Suppression de compte : données + utilisateur Supabase dans une transaction SQL | [ADR 0010](decisions/0010-suppression-de-compte.md) |
 | 07/10 | Démarches administratives (stores, SMS, Render) reportées à novembre, priorité au code | — |
 | 07/10 | Transactions : montant signé, comptes sans table, annulation par écriture opposée | [ADR 0009](decisions/0009-modele-transactions.md) |
 | 07/10 | Auth mobile : session en stockage sécurisé, PIN PBKDF2 60 000 itérations, verrouillage 3 min, config `--dart-define-from-file` | [ADR 0008](decisions/0008-auth-mobile-implementation.md) |
@@ -200,6 +202,12 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 - `feature/comptes-transactions` : API transactions (ADR 0009), 47 tests, migration appliquée sur Supabase,
   test de bout en bout OK (ouvertures, encaissement, rejeu, dépense, annulation, soldes = 192 000 FCFA, isolation).
   Transactions de test ajoutées à la boutique de test A.
+- PR #5 (`feature/comptes-transactions → dev`) ouverte ; correctif `RESTRICT` (suppression en cascade).
+- `feature/onboarding` : création boutique + soldes d'ouverture + Profil + suppression de compte (ADR 0010).
+  56 tests backend, 54 tests mobile. Testé sur émulateur avec l'API sur **SQLite local** (vrais JWT,
+  aucune donnée Supabase touchée) : onboarding complet → Accueil 350 000 FCFA, Profil, suppression
+  sans clé secrète → 503 et rien d'effacé. Bug trouvé : numéro Supabase sans « + » non reconnu (corrigé).
+- Ordre de fusion : #3 (app + auth) → #5 (transactions) → onboarding.
 
 ### 05/10/2026 (2)
 - MCP Supabase **fonctionnel** (Postgres 17, ref `ubpvgafdhjnsimffybnd`).

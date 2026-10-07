@@ -21,3 +21,6 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions [Sem
 - Onboarding (A6, A7) : création de la boutique, soldes d'ouverture par compte (« Ignorer » = 0),
   reprise à la bonne étape ; Accueil provisoire avec les soldes.
 - Profil et suppression de compte (A8, ADR 0010) : boutique, transactions et utilisateur Supabase.
+- Encaissements (E1, E3, E4, E5 ; ADR 0011) : saisie, stockage local sqflite, synchronisation
+  hors ligne (saisie, déverrouillage, premier plan, retour réseau), annulation, historique filtrable,
+  soldes de l'Accueil calculés en local.

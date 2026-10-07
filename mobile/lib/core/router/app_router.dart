@@ -12,6 +12,9 @@ import '../../features/auth/presentation/screens/pin_unlock_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/onboarding/presentation/profil_screen.dart';
+import '../../features/tresorerie/presentation/historique_screen.dart';
+import '../../features/tresorerie/presentation/nouvel_encaissement_screen.dart';
+import '../../features/tresorerie/presentation/transaction_detail_screen.dart';
 import '../widgets/main_shell.dart';
 import '../widgets/placeholder_screen.dart';
 import 'routes.dart';
@@ -36,52 +39,86 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: 'code',
-            redirect: (_, state) => state.extra is PhoneNumber ? null : Routes.otp,
-            builder: (_, state) => OtpCodeScreen(phone: state.extra! as PhoneNumber),
+            redirect: (_, state) =>
+                state.extra is PhoneNumber ? null : Routes.otp,
+            builder: (_, state) =>
+                OtpCodeScreen(phone: state.extra! as PhoneNumber),
           ),
         ],
       ),
       GoRoute(path: Routes.pinSetup, builder: (_, _) => const PinSetupScreen()),
       GoRoute(path: Routes.pin, builder: (_, _) => const PinUnlockScreen()),
-      GoRoute(path: Routes.onboarding, builder: (_, _) => const OnboardingScreen()),
+      GoRoute(
+        path: Routes.onboarding,
+        builder: (_, _) => const OnboardingScreen(),
+      ),
 
       // App principale : 4 onglets, chacun garde sa propre pile d'écrans.
       StatefulShellRoute.indexedStack(
         builder: (_, _, shell) => MainShell(shell: shell),
         branches: [
-          StatefulShellBranch(routes: [
-            GoRoute(
-              path: Routes.accueil,
-              builder: (_, _) => const AccueilScreen(),
-              routes: [GoRoute(path: 'profil', builder: (_, _) => const ProfilScreen())],
-            ),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(
-              path: Routes.tresorerie,
-              builder: (_, _) => const PlaceholderScreen('Trésorerie'),
-            ),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(
-              path: Routes.creances,
-              builder: (_, _) => const PlaceholderScreen('Créances'),
-              routes: [
-                GoRoute(
-                  path: ':id',
-                  builder: (_, state) => PlaceholderScreen(
-                    'Créance ${state.pathParameters['id']}',
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.accueil,
+                builder: (_, _) => const AccueilScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'profil',
+                    builder: (_, _) => const ProfilScreen(),
                   ),
-                ),
-              ],
-            ),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(
-              path: Routes.rapport,
-              builder: (_, _) => const PlaceholderScreen('Rapport'),
-            ),
-          ]),
+                  GoRoute(
+                    path: 'encaissement',
+                    builder: (_, _) => const NouvelEncaissementScreen(),
+                  ),
+                  GoRoute(
+                    path: 'transactions',
+                    builder: (_, _) => const HistoriqueScreen(),
+                    routes: [
+                      GoRoute(
+                        path: ':id',
+                        builder: (_, state) => TransactionDetailScreen(
+                          id: state.pathParameters['id']!,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.tresorerie,
+                builder: (_, _) => const PlaceholderScreen('Trésorerie'),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.creances,
+                builder: (_, _) => const PlaceholderScreen('Créances'),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    builder: (_, state) => PlaceholderScreen(
+                      'Créance ${state.pathParameters['id']}',
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.rapport,
+                builder: (_, _) => const PlaceholderScreen('Rapport'),
+              ),
+            ],
+          ),
         ],
       ),
     ],

@@ -16,7 +16,9 @@ class ProfilScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfilScreenState extends ConsumerState<ProfilScreen> {
-  late Future<MonProfil> _profil = ref.read(onboardingRepositoryProvider).monProfil();
+  late Future<MonProfil> _profil = ref
+      .read(onboardingRepositoryProvider)
+      .monProfil();
 
   Future<void> _seDeconnecter() async {
     final ok = await _confirmer(
@@ -38,21 +40,35 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
     try {
       await ref.read(onboardingRepositoryProvider).supprimerCompte();
       await ref.read(authStatusProvider.notifier).accountDeleted();
-      messenger.showSnackBar(const SnackBar(content: Text('Votre compte a été supprimé.')));
+      (messenger..clearSnackBars()).showSnackBar(
+        const SnackBar(content: Text('Votre compte a été supprimé.')),
+      );
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(ApiClient.messageFor(e))));
+      (messenger..clearSnackBars()).showSnackBar(
+        SnackBar(content: Text(ApiClient.messageFor(e))),
+      );
     }
   }
 
-  Future<bool> _confirmer({required String titre, required String message, required String action}) async {
+  Future<bool> _confirmer({
+    required String titre,
+    required String message,
+    required String action,
+  }) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(titre),
         content: Text(message),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(action)),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(action),
+          ),
         ],
       ),
     );
@@ -77,14 +93,18 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
                       tooltip: 'Réessayer',
                       icon: const Icon(Icons.refresh),
                       onPressed: () => setState(
-                        () => _profil = ref.read(onboardingRepositoryProvider).monProfil(),
+                        () => _profil = ref
+                            .read(onboardingRepositoryProvider)
+                            .monProfil(),
                       ),
                     ),
                   ),
                 );
               }
               final profil = snapshot.data;
-              final phone = profil == null ? null : PhoneNumber.tryParse(profil.phone);
+              final phone = profil == null
+                  ? null
+                  : PhoneNumber.tryParse(profil.phone);
               return Card(
                 child: Column(
                   children: [
@@ -95,7 +115,11 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
                     ),
                     ListTile(
                       leading: const Icon(Icons.phone_outlined),
-                      title: Text(phone == null ? (profil?.phone ?? '…') : '+221 ${phone.display}'),
+                      title: Text(
+                        phone == null
+                            ? (profil?.phone ?? '…')
+                            : '+221 ${phone.display}',
+                      ),
                       subtitle: const Text('Numéro de téléphone'),
                     ),
                   ],
@@ -113,12 +137,20 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
                   onTap: _seDeconnecter,
                 ),
                 ListTile(
-                  leading: const Icon(Icons.delete_forever_outlined, color: AppColors.error),
+                  leading: const Icon(
+                    Icons.delete_forever_outlined,
+                    color: AppColors.error,
+                  ),
                   title: const Text(
                     'Supprimer mon compte',
-                    style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: AppColors.error,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                  subtitle: const Text('Efface définitivement votre boutique et vos données'),
+                  subtitle: const Text(
+                    'Efface définitivement votre boutique et vos données',
+                  ),
                   onTap: _supprimerCompte,
                 ),
               ],
@@ -135,7 +167,8 @@ class _ConfirmationSuppression extends StatefulWidget {
   const _ConfirmationSuppression();
 
   @override
-  State<_ConfirmationSuppression> createState() => _ConfirmationSuppressionState();
+  State<_ConfirmationSuppression> createState() =>
+      _ConfirmationSuppressionState();
 }
 
 class _ConfirmationSuppressionState extends State<_ConfirmationSuppression> {
@@ -173,7 +206,10 @@ class _ConfirmationSuppressionState extends State<_ConfirmationSuppression> {
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Annuler'),
+        ),
         FilledButton(
           style: FilledButton.styleFrom(
             backgroundColor: AppColors.error,

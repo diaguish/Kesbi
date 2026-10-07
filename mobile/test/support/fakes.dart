@@ -4,12 +4,30 @@ import 'dart:convert';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:kesbi/app.dart';
 import 'package:kesbi/core/api/api_client.dart';
 import 'package:kesbi/core/storage/secure_store.dart';
 import 'package:kesbi/features/auth/data/auth_gateway.dart';
 import 'package:kesbi/features/auth/data/pin_repository.dart';
 import 'package:kesbi/features/auth/domain/phone_number.dart';
 import 'package:kesbi/features/auth/presentation/auth_status_provider.dart';
+import 'package:kesbi/features/tresorerie/data/transaction_store.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+/// Base SQLite en mémoire, neuve pour chaque test.
+TransactionStore memoryTransactionStore() {
+  sqfliteFfiInit();
+  return TransactionStore(
+    () => databaseFactoryFfiNoIsolate.openDatabase(
+      inMemoryDatabasePath,
+      options: OpenDatabaseOptions(
+        version: 1,
+        singleInstance: false,
+        onCreate: (db, _) => TransactionStore.createSchema(db),
+      ),
+    ),
+  );
+}
 
 class InMemorySecureStore implements SecureStore {
   final values = <String, String>{};
@@ -73,24 +91,50 @@ class FakeClock {
   DateTime call() => now;
 }
 
-/// Faux backend Django avec état : boutique, soldes d'ouverture, suppression de compte.
+/// Faux backend Django avec état : boutique, transactions, suppression de compte.
 class FakeBackend {
-  FakeBackend({this.boutiqueNom, Map<String, int>? ouvertures})
-      : ouvertures = ouvertures ?? {};
+  FakeBackend({this.boutiqueNom, Map<String, int>? ouvertures}) {
+    ouvertures?.forEach(_ajouterOuverture);
+  }
 
   /// Commerçant existant, onboarding terminé.
-  FakeBackend.existant()
-      : boutiqueNom = 'Boutique Awa',
-        ouvertures = {'caisse': 200000, 'wave': 50000, 'orange_money': 0};
+  FakeBackend.existant() : boutiqueNom = 'Boutique Awa' {
+    const soldes = {'caisse': 200000, 'wave': 50000, 'orange_money': 0};
+    soldes.forEach(_ajouterOuverture);
+  }
 
   String? boutiqueNom;
-  final Map<String, int> ouvertures;
+
+  /// Transactions côté serveur, au format de l'API.
+  final transactions = <Map<String, dynamic>>[];
   bool online = true;
   bool compteSupprime = false;
 
   /// Code HTTP à renvoyer pour la prochaine requête (simulation de panne).
   int? prochaineErreur;
   final requests = <String>[];
+
+  Map<String, int> get ouvertures => {
+        for (final t in transactions.where((t) => t['type'] == 'ouverture'))
+          t['compte'] as String: t['montant'] as int,
+      };
+
+  int solde(String compte) => transactions
+      .where((t) => t['compte'] == compte)
+      .fold(0, (sum, t) => sum + (t['montant'] as int));
+
+  void _ajouterOuverture(String compte, int montant) => transactions.add({
+        'id': 'ouv-$compte',
+        'type': 'ouverture',
+        'compte': compte,
+        'montant': montant,
+        'date_operation': '2026-10-01T08:00:00Z',
+        'created_at': '2026-10-01T08:00:00Z',
+        'categorie': '',
+        'note': '',
+        'annulation_de': null,
+        'annulee_par': null,
+      });
 
   Future<http.Response> handle(http.Request request) async {
     if (!online) throw http.ClientException('hors ligne');
@@ -101,6 +145,21 @@ class FakeBackend {
       return http.Response(jsonEncode({'detail': 'Erreur simulée'}), code);
     }
     final body = request.body.isEmpty ? <String, dynamic>{} : jsonDecode(request.body) as Map<String, dynamic>;
+    final annulation = RegExp(r'^POST /api/transactions/([^/]+)/annuler/$').firstMatch(route);
+    if (annulation != null) {
+      final originale = transactions.firstWhere((t) => t['id'] == annulation.group(1));
+      if (transactions.any((t) => t['id'] == body['id'])) return _json({'id': body['id']});
+      final copie = {
+        ...originale,
+        'id': body['id'],
+        'montant': -(originale['montant'] as int),
+        'annulation_de': originale['id'],
+        'created_at': body['created_at'],
+      };
+      originale['annulee_par'] = body['id'];
+      transactions.add(copie);
+      return _json(copie, 201);
+    }
     switch (route) {
       case 'GET /api/me/':
         return _json({
@@ -116,20 +175,31 @@ class FakeBackend {
         boutiqueNom = body['nom'] as String;
         return _json({'id': body['id'], 'nom': boutiqueNom}, 201);
       case 'POST /api/transactions/':
-        final compte = body['compte'] as String;
-        if (body['type'] == 'ouverture' && ouvertures.containsKey(compte)) {
+        if (transactions.any((t) => t['id'] == body['id'])) return _json(body);
+        if (body['type'] == 'ouverture' && ouvertures.containsKey(body['compte'])) {
           return _json({'detail': 'Ouverture déjà saisie.'}, 409);
         }
-        ouvertures[compte] = body['montant'] as int;
-        return _json(body, 201);
+        // Comme l'API : date_operation par défaut = maintenant, champs texte toujours présents.
+        final tx = {
+          'date_operation': body['created_at'] ?? '2026-10-07T09:00:00Z',
+          'categorie': '',
+          'note': '',
+          ...body,
+          'annulation_de': null,
+          'annulee_par': null,
+        };
+        transactions.add(tx);
+        return _json(tx, 201);
+      case 'GET /api/transactions/':
+        return _json({'next': null, 'previous': null, 'results': transactions.reversed.toList()});
       case 'GET /api/comptes/':
         final comptes = [
-          for (final c in ['caisse', 'wave', 'orange_money']) {'compte': c, 'solde': ouvertures[c] ?? 0},
+          for (final c in ['caisse', 'wave', 'orange_money']) {'compte': c, 'solde': solde(c)},
         ];
-        return _json({'comptes': comptes, 'total': ouvertures.values.fold(0, (a, b) => a + b)});
+        return _json({'comptes': comptes});
       case 'DELETE /api/compte/':
         boutiqueNom = null;
-        ouvertures.clear();
+        transactions.clear();
         compteSupprime = true;
         return http.Response('', 204);
     }
@@ -149,6 +219,7 @@ List<Override> authOverrides({
   required FakeAuthGateway gateway,
   FakeBackend? backend,
   FakeClock? clock,
+  TransactionStore? transactions,
 }) {
   final fake = backend ?? FakeBackend();
   final api = ApiClient(
@@ -163,6 +234,8 @@ List<Override> authOverrides({
       PinRepository(store, iterations: 10, runHash: (computation) => computation()),
     ),
     apiClientProvider.overrideWithValue(api),
+    transactionStoreProvider.overrideWithValue(transactions ?? memoryTransactionStore()),
+    connectivityChangesProvider.overrideWithValue(const Stream.empty()),
     if (clock != null) clockProvider.overrideWithValue(clock.call),
   ];
 }

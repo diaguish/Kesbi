@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_client.dart';
 import '../../../core/storage/secure_store.dart';
+import '../../tresorerie/data/transaction_store.dart';
 import '../data/auth_gateway.dart';
 import '../data/pin_repository.dart';
 import '../domain/auth_status.dart';
@@ -13,7 +14,9 @@ import '../domain/phone_number.dart';
 final clockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
 
 /// État d'accès courant. Le routeur l'écoute pour rediriger (voir app_router.dart).
-final authStatusProvider = NotifierProvider<AuthController, AuthStatus>(AuthController.new);
+final authStatusProvider = NotifierProvider<AuthController, AuthStatus>(
+  AuthController.new,
+);
 
 /// Parcours d'accès (ADR 0003) :
 /// numéro → OTP → création du PIN → (onboarding) → app ; ensuite PIN à chaque ouverture.
@@ -50,8 +53,8 @@ class AuthController extends Notifier<AuthStatus> {
     final next = !_gateway.hasSession
         ? AuthStatus.signedOut
         : await _pins.hasPin()
-            ? AuthStatus.locked
-            : AuthStatus.pinSetup;
+        ? AuthStatus.locked
+        : AuthStatus.pinSetup;
     if (ref.mounted && state == AuthStatus.unknown) state = next;
   }
 
@@ -113,7 +116,9 @@ class AuthController extends Notifier<AuthStatus> {
   }
 
   Future<void> _unlocked() async {
-    state = await _isOnboarded() ? AuthStatus.ready : AuthStatus.needsOnboarding;
+    state = await _isOnboarded()
+        ? AuthStatus.ready
+        : AuthStatus.needsOnboarding;
   }
 
   /// Onboarding terminé = boutique créée **et** soldes d'ouverture saisis.
@@ -123,7 +128,8 @@ class AuthController extends Notifier<AuthStatus> {
     try {
       final me = await ref.read(apiClientProvider).getJson('/api/me/');
       final boutiques = (me['boutiques'] as List).cast<Map<String, dynamic>>();
-      final done = boutiques.isNotEmpty && boutiques.first['ouverture_faite'] == true;
+      final done =
+          boutiques.isNotEmpty && boutiques.first['ouverture_faite'] == true;
       if (done) await _store.write(_onboardedKey, '1');
       return done;
     } catch (_) {
@@ -135,6 +141,8 @@ class AuthController extends Notifier<AuthStatus> {
   Future<void> _reset() async {
     await _pins.clear();
     await _store.delete(_onboardedKey);
+    // Plus aucune donnée financière sur le téléphone après déconnexion.
+    await ref.read(transactionStoreProvider).clear();
     await _gateway.signOut();
     if (ref.mounted) state = AuthStatus.signedOut;
   }

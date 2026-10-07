@@ -15,6 +15,7 @@ Une décision n'est jamais modifiée après acceptation : on crée un nouvel ADR
 | [0008](0008-auth-mobile-implementation.md) | Auth mobile : session sécurisée, hachage du PIN, verrouillage | Accepté |
 | [0009](0009-modele-transactions.md) | Transactions : montant signé, comptes sans table, annulation | Accepté |
 | [0010](0010-suppression-de-compte.md) | Suppression de compte (données + utilisateur Supabase) | Accepté |
+| [0011](0011-synchronisation-hors-ligne.md) | Synchronisation hors ligne des transactions | Accepté |
 
 ## Modèle
 ```markdown

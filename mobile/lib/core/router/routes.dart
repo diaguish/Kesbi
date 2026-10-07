@@ -13,6 +13,9 @@ abstract final class Routes {
 
   static const accueil = '/accueil';
   static const profil = '/accueil/profil';
+  static const nouvelEncaissement = '/accueil/encaissement';
+  static const historique = '/accueil/transactions';
+  static String transaction(String id) => '$historique/$id';
   static const tresorerie = '/tresorerie';
   static const creances = '/creances';
   static const rapport = '/rapport';
@@ -35,7 +38,9 @@ String? authRedirect(AuthStatus status, String location) {
   };
 
   if (target != null) {
-    return location == target || location.startsWith('$target/') ? null : target;
+    return location == target || location.startsWith('$target/')
+        ? null
+        : target;
   }
 
   // Utilisateur prêt : il ne doit plus voir les écrans d'accès.

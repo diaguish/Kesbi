@@ -69,7 +69,7 @@ Légende : ✅ fait · 🟡 en cours · ⬜ à faire · ❌ retiré
 | T1 | Comptes Caisse, Wave, Orange Money affichés séparément (Banque ❌ retirée du MVP) | ⬜ |
 | T2 | Transferts entre comptes + frais (= vraie dépense) | ⬜ |
 | T3 | « Corriger le solde » → transaction `ajustement` | ⬜ |
-| T4 | Soldes toujours calculés depuis les transactions | ⬜ |
+| T4 | Soldes toujours calculés depuis les transactions | 🟡 API faite (`feature/comptes-transactions`), écrans à faire |
 
 ### 2.6 Créances et relances — S7-S8
 | # | Exigence | État |
@@ -140,8 +140,10 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 
 ### Développement (prochaines étapes)
 1. ✅ `feature/setup-backend` fusionnée dans `dev` (PR #1, 07/10).
-2. 🟡 `feature/auth-otp-pin` (partie de `feature/setup-mobile`) : codée, 38 tests, validée sur émulateur Android. **Test iOS sur le Mac**, puis PR `setup-mobile → dev` **puis** PR `auth-otp-pin → dev`, dans cet ordre.
-3. Onboarding : création boutique, soldes d'ouverture, suppression de compte.
+2. 🟡 `feature/comptes-transactions` : API transactions + soldes (ADR 0009), 47 tests, migrée et testée sur Supabase. PR vers `dev` à ouvrir.
+3. 🟡 `feature/auth-otp-pin` (partie de `feature/setup-mobile`) : codée, 38 tests, validée sur émulateur Android. **Test iOS sur le Mac**, puis PR `setup-mobile → dev` **puis** PR `auth-otp-pin → dev`, dans cet ordre.
+4. ⬜ Onboarding (app) : création boutique, soldes d'ouverture, suppression de compte.
+5. ⬜ Encaissements (app) : saisie, sqflite + sync, annulation, historique.
 
 ---
 
@@ -156,6 +158,7 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | Le réseau habituel (box / Wi-Fi) bloque les ports Postgres 5432 / 6543 en sortie | Django local ne joint pas Supabase | Partage de connexion 4G pour `migrate` et les tests locaux ; Render n'est pas concerné |
 | Render gratuit en veille (30-50 s) | Mauvaise 1ère impression | Offre payante (~7 $/mois) en production |
 | Supabase plan FREE : projet mis en pause après 7 jours d'inactivité | App arrêtée en production | Plan Pro (25 $/mois) + projet de production séparé avant les premiers commerçants |
+| **Démarches stores / SMS / Render reportées à novembre** (décision du 07/10) | Test fermé Play Store (14 j) et compte Apple (D-U-N-S) sans marge pour le 01/12 | Au minimum ouvrir la Play Console dès que possible (vérification d'identité) |
 | Charge : ~200 h pour tout le MVP | Retard global | Suivi hebdo dans ce document, délestage Rapports |
 | MCP Supabase avec accès écriture (`database`, `account`, `branching`) | Modification de données réelles / coûts | Projet Supabase **séparé** pour la production, jamais relié au MCP (ou `read_only=true`) |
 | Tables Django dans le schéma `public` exposé par l'API Supabase | Données lisibles avec la clé `anon` | `enable_rls()` obligatoire dans chaque migration (ADR 0007) |
@@ -175,6 +178,8 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | 28/09 | Identifiant d'app `com.kesbi.app` | [ADR 0005](decisions/0005-identifiant-application.md) |
 | 29/09 | Riverpod (sans codegen) + go_router | [ADR 0006](decisions/0006-riverpod-go-router.md) |
 | 28/09 | Repo déplacé hors OneDrive vers `C:\dev\Kesbi` | — |
+| 07/10 | Démarches administratives (stores, SMS, Render) reportées à novembre, priorité au code | — |
+| 07/10 | Transactions : montant signé, comptes sans table, annulation par écriture opposée | [ADR 0009](decisions/0009-modele-transactions.md) |
 | 07/10 | Auth mobile : session en stockage sécurisé, PIN PBKDF2 60 000 itérations, verrouillage 3 min, config `--dart-define-from-file` | [ADR 0008](decisions/0008-auth-mobile-implementation.md) |
 | 01/10 | Backend : Django 5.2 LTS sans contrib.auth, JWT Supabase via JWKS, isolation par boutique, RLS sur les tables Django | [ADR 0007](decisions/0007-backend-auth-jwt-et-isolation.md) |
 
@@ -190,6 +195,11 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 - **Testé sur émulateur Android avec le vrai Supabase + API locale (4G)** : OTP de test, création PIN,
   `GET /api/me/` → Accueil, redémarrage → PIN, mauvais PIN, déverrouillage **hors ligne**, PIN oublié → OTP.
 - Branche poussée sur GitHub. Reste : test iOS, puis PR dans l'ordre setup-mobile → auth.
+- PR #3 (app + auth → `dev`) et PR #4 (release `dev → main`, backend) ouvertes.
+- Décision : démarches stores / SMS / Render reportées à novembre (risque noté).
+- `feature/comptes-transactions` : API transactions (ADR 0009), 47 tests, migration appliquée sur Supabase,
+  test de bout en bout OK (ouvertures, encaissement, rejeu, dépense, annulation, soldes = 192 000 FCFA, isolation).
+  Transactions de test ajoutées à la boutique de test A.
 
 ### 05/10/2026 (2)
 - MCP Supabase **fonctionnel** (Postgres 17, ref `ubpvgafdhjnsimffybnd`).

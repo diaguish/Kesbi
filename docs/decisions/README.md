@@ -10,6 +10,7 @@ Une décision n'est jamais modifiée après acceptation : on crée un nouvel ADR
 | [0003](0003-authentification-otp-pin.md) | Authentification : OTP SMS + code PIN local | Accepté |
 | [0004](0004-comptes-et-soldes-ouverture.md) | Comptes MVP (sans Banque), soldes d'ouverture, transferts | Accepté |
 | [0007](0007-backend-auth-jwt-et-isolation.md) | Backend : JWT Supabase et isolation par boutique | Accepté |
+| [0009](0009-modele-transactions.md) | Transactions : montant signé, comptes sans table, annulation | Accepté |
 
 ## Modèle
 ```markdown

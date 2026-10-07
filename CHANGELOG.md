@@ -10,3 +10,5 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions [Sem
 - Maquettes v0 et règles UI (`docs/design/`).
 - API Django `backend/` (ADR 0007) : vérification du JWT Supabase (JWKS / HS256), modèles
   Boutique et Membre, isolation par boutique, RLS sur les tables créées, `render.yaml`.
+- API transactions (ADR 0009) : comptes Caisse / Wave / Orange Money, transactions à montant signé,
+  création idempotente, annulation, soldes calculés, historique filtrable et paginé.

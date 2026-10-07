@@ -24,3 +24,6 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions [Sem
 - Encaissements (E1, E3, E4, E5 ; ADR 0011) : saisie, stockage local sqflite, synchronisation
   hors ligne (saisie, déverrouillage, premier plan, retour réseau), annulation, historique filtrable,
   soldes de l'Accueil calculés en local.
+- Dépenses (D1, D2) : saisie (catégories dédiées, compte débité), hors ligne et synchronisation,
+  annulation, confirmation si le compte deviendrait négatif, filtre Encaissements / Dépenses
+  dans l'historique, bouton « − Dépense » sur l'Accueil.

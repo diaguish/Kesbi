@@ -133,7 +133,7 @@ void main() {
 
     await tap(tester, find.text('Voir tout'));
     expect(find.text('Historique'), findsOneWidget);
-    await tap(tester, find.widgetWithText(ChoiceChip, 'Tout'));
+    await tap(tester, find.widgetWithText(ChoiceChip, 'Depuis le début'));
     expect(find.text('Vente comptant'), findsNWidgets(2));
 
     await tap(tester, find.widgetWithText(ChoiceChip, 'Wave'));

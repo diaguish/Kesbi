@@ -13,7 +13,8 @@ import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/onboarding/presentation/profil_screen.dart';
 import '../../features/tresorerie/presentation/historique_screen.dart';
-import '../../features/tresorerie/presentation/nouvel_encaissement_screen.dart';
+import '../../features/tresorerie/domain/transaction.dart';
+import '../../features/tresorerie/presentation/nouvelle_operation_screen.dart';
 import '../../features/tresorerie/presentation/transaction_detail_screen.dart';
 import '../widgets/main_shell.dart';
 import '../widgets/placeholder_screen.dart';
@@ -69,7 +70,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   ),
                   GoRoute(
                     path: 'encaissement',
-                    builder: (_, _) => const NouvelEncaissementScreen(),
+                    builder: (_, _) => const NouvelleOperationScreen(saisie: TypeSaisie.encaissement),
+                  ),
+                  GoRoute(
+                    path: 'depense',
+                    builder: (_, _) => const NouvelleOperationScreen(saisie: TypeSaisie.depense),
                   ),
                   GoRoute(
                     path: 'transactions',

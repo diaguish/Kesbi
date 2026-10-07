@@ -9,13 +9,16 @@ class PhoneNumber {
 
   static final _mobile = RegExp(r'^7[05678]\d{7}$');
 
-  /// Accepte les espaces, tirets, `+221` ou `00221` en tête. `null` si invalide.
+  /// Accepte les espaces, tirets, `+221`, `00221` ou `221` (format renvoyé par
+  /// Supabase) en tête. `null` si invalide.
   static PhoneNumber? tryParse(String input) {
     var digits = input.replaceAll(RegExp(r'[\s.\-()]'), '');
     if (digits.startsWith('+221')) {
       digits = digits.substring(4);
     } else if (digits.startsWith('00221')) {
       digits = digits.substring(5);
+    } else if (digits.length == 12 && digits.startsWith('221')) {
+      digits = digits.substring(3);
     }
     return _mobile.hasMatch(digits) ? PhoneNumber._(digits) : null;
   }

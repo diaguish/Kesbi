@@ -18,3 +18,6 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions [Sem
   session dans le stockage sécurisé.
 - API transactions (ADR 0009) : comptes Caisse / Wave / Orange Money, transactions à montant signé,
   création idempotente, annulation, soldes calculés, historique filtrable et paginé.
+- Onboarding (A6, A7) : création de la boutique, soldes d'ouverture par compte (« Ignorer » = 0),
+  reprise à la bonne étape ; Accueil provisoire avec les soldes.
+- Profil et suppression de compte (A8, ADR 0010) : boutique, transactions et utilisateur Supabase.

@@ -12,6 +12,7 @@ abstract final class Routes {
   static const onboarding = '/onboarding';
 
   static const accueil = '/accueil';
+  static const profil = '/accueil/profil';
   static const tresorerie = '/tresorerie';
   static const creances = '/creances';
   static const rapport = '/rapport';

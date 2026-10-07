@@ -37,7 +37,9 @@ cp .env.example .env                            # puis DJANGO_DEBUG=true pour le
 - Émulateur Android → API locale : `http://10.0.2.2:8000`. Simulateur iOS : `http://localhost:8000`.
 - Endpoints : `GET /api/health/` (public), `GET /api/me/`, `POST /api/boutiques/`, `GET|PATCH /api/boutique/`,
   `GET /api/comptes/` (soldes calculés), `GET|POST /api/transactions/`, `GET /api/transactions/<id>/`,
-  `POST /api/transactions/<id>/annuler/` ([ADR 0009](decisions/0009-modele-transactions.md)).
+  `POST /api/transactions/<id>/annuler/` ([ADR 0009](decisions/0009-modele-transactions.md)),
+  `DELETE /api/compte/` (suppression de compte, [ADR 0010](decisions/0010-suppression-de-compte.md) —
+  nécessite `SUPABASE_SECRET_KEY` dans `.env`, sinon 503).
 - **Sans 4G** (réseau qui bloque le port 5432) : laisser `DATABASE_URL` vide → SQLite local.
   L'API vérifie quand même les vrais JWT Supabase (JWKS en HTTPS) : suffisant pour développer l'app.
 - Auth et isolation par boutique : [ADR 0007](decisions/0007-backend-auth-jwt-et-isolation.md).

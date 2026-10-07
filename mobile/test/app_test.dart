@@ -15,10 +15,10 @@ void main() {
     gateway = FakeAuthGateway();
   });
 
-  Future<void> launch(WidgetTester tester, {List<Map<String, dynamic>> boutiques = const []}) async {
+  Future<void> launch(WidgetTester tester, {FakeBackend? backend}) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: authOverrides(store: store, gateway: gateway, boutiques: boutiques),
+        overrides: authOverrides(store: store, gateway: gateway, backend: backend),
         child: const KesBiApp(),
       ),
     );
@@ -69,7 +69,7 @@ void main() {
     expect(find.text('Confirmez votre code PIN'), findsOneWidget);
     await typePin(tester, '482915');
 
-    expect(find.text('Création boutique — à venir'), findsOneWidget);
+    expect(find.text('Votre boutique'), findsOneWidget);
   });
 
   testWidgets('ouverture quotidienne : PIN puis navigation dans l\'app', (tester) async {
@@ -81,7 +81,7 @@ void main() {
     expect(find.text('Code incorrect. Il reste 4 essais.'), findsOneWidget);
 
     await typePin(tester, '482915');
-    expect(find.text('Accueil — à venir'), findsOneWidget);
+    expect(find.text('Solde total'), findsOneWidget);
 
     await tester.tap(find.text('Créances'));
     await tester.pumpAndSettle();

@@ -1,8 +1,12 @@
 import uuid
+from unittest import mock
 
 from django.urls import reverse
 
 from core.testing import SupabaseAPITestCase
+
+from core.supabase_admin import SupabaseAdminError
+from tresorerie.models import Transaction
 
 from .models import Boutique, Membre
 
@@ -85,3 +89,60 @@ class BoutiqueTests(SupabaseAPITestCase):
         self.assertEqual(self.client.get(reverse("me")).json()["boutiques"], [])
         self.creer()
         self.assertEqual(len(self.client.get(reverse("me")).json()["boutiques"]), 1)
+
+    def test_me_indique_si_les_soldes_d_ouverture_sont_saisis(self):
+        self.authenticate()
+        boutique_id = self.creer().json()["id"]
+        me = lambda: self.client.get(reverse("me")).json()["boutiques"][0]["ouverture_faite"]
+        self.assertFalse(me())
+        for compte in ("caisse", "wave"):
+            self.client.post(reverse("transactions"), {"id": str(uuid.uuid4()), "type": "ouverture", "compte": compte, "montant": 0}, format="json")
+        self.assertFalse(me())
+        self.client.post(reverse("transactions"), {"id": str(uuid.uuid4()), "type": "ouverture", "compte": "orange_money", "montant": 5000}, format="json")
+        self.assertTrue(me())
+        self.assertEqual(str(Boutique.objects.get().id), boutique_id)
+
+
+class SuppressionCompteTests(SupabaseAPITestCase):
+    url = reverse("compte")
+
+    def setUp(self):
+        super().setUp()
+        self.user_id = self.authenticate()
+        self.client.post(reverse("boutique-create"), {"id": str(uuid.uuid4()), "nom": "Boutique Awa"}, format="json")
+        tx = self.client.post(
+            reverse("transactions"),
+            {"id": str(uuid.uuid4()), "type": "encaissement", "compte": "caisse", "montant": 1000, "categorie": "Vente"},
+            format="json",
+        ).json()
+        self.client.post(reverse("transaction-annuler", args=[tx["id"]]), {"id": str(uuid.uuid4())}, format="json")
+
+    @mock.patch("core.supabase_admin.delete_user")
+    def test_supprime_tout_et_l_utilisateur_supabase(self, delete_user):
+        autre = self.authenticate()
+        self.client.post(reverse("boutique-create"), {"id": str(uuid.uuid4()), "nom": "Autre"}, format="json")
+        self.authenticate(self.user_id)
+
+        self.assertEqual(self.client.delete(self.url).status_code, 204)
+        delete_user.assert_called_once_with(self.user_id)
+        self.assertFalse(Membre.objects.filter(user_id=self.user_id).exists())
+        self.assertEqual(Transaction.objects.count(), 0)
+        # L'autre commerçant n'est pas touché.
+        self.assertEqual(Boutique.objects.get().nom, "Autre")
+        self.assertTrue(Membre.objects.filter(user_id=autre).exists())
+
+    @mock.patch("core.supabase_admin.delete_user", side_effect=SupabaseAdminError("panne"))
+    def test_echec_supabase_rien_n_est_efface(self, _):
+        self.assertEqual(self.client.delete(self.url).status_code, 503)
+        self.assertEqual(Boutique.objects.count(), 1)
+        self.assertEqual(Transaction.objects.count(), 2)
+
+    @mock.patch("core.supabase_admin.delete_user")
+    def test_idempotent(self, _):
+        self.assertEqual(self.client.delete(self.url).status_code, 204)
+        self.assertEqual(self.client.delete(self.url).status_code, 204)
+
+    def test_sans_jeton_401(self):
+        self.client.credentials()
+        self.assertEqual(self.client.delete(self.url).status_code, 401)
+

@@ -20,6 +20,10 @@
    - [ ] Docs / ADR / CHANGELOG à jour si nécessaire
 5. Release : PR `dev` → `main`, tag `vX.Y.Z`
 
+## Exception : le document de suivi
+`docs/suivi-projet.md` est commité **directement sur `dev`** (commit de documentation seule),
+pour que le suivi soit toujours à jour sans attendre le merge d'une feature.
+
 ## Messages de commit
 [Conventional Commits](https://www.conventionalcommits.org/fr/) :
 `feat(auth): vérification OTP`, `fix(sync): doublon au rejeu`, `docs: ADR 0003`.

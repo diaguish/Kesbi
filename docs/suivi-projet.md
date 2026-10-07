@@ -41,11 +41,11 @@ Légende : ✅ fait · 🟡 en cours · ⬜ à faire · ❌ retiré
 ### 2.2 Encaissements — S3
 | # | Exigence | État |
 |---|---|---|
-| E1 | Saisir un encaissement : montant, catégorie, compte crédité, date (défaut aujourd'hui), client, note | ⬜ |
-| E2 | Catégorie « Règlement créance » liée à un client existant (diminue le reste dû) | ⬜ |
-| E3 | Fonctionne hors ligne (UUID côté app, sync idempotente) ([ADR 0002](decisions/0002-schema-offline-first.md)) | ⬜ |
-| E4 | Correction = annulation + nouvelle écriture (pas de modification de montant) | ⬜ |
-| E5 | Historique des transactions avec filtres | ⬜ |
+| E1 | Saisir un encaissement : montant, catégorie, compte crédité, date (défaut aujourd'hui), client, note |🟡 Android OK (`feature/encaissements`), iOS à tester |
+| E2 | Catégorie « Règlement créance » liée à un client existant (diminue le reste dû) | ⬜ avec le module Créances (S7) |
+| E3 | Fonctionne hors ligne (UUID côté app, sync idempotente) ([ADR 0002](decisions/0002-schema-offline-first.md)) |🟡 Android OK (`feature/encaissements`), iOS à tester |
+| E4 | Correction = annulation + nouvelle écriture (pas de modification de montant) |🟡 Android OK (`feature/encaissements`), iOS à tester |
+| E5 | Historique des transactions avec filtres |🟡 Android OK (`feature/encaissements`), iOS à tester |
 
 ### 2.3 Dépenses — S4
 | # | Exigence | État |
@@ -106,7 +106,7 @@ alerte « solde bas » · biométrie.
 | Semaine | Dates | Objectif | État |
 |---|---|---|---|
 | **S1-S2** | 21/09 → 04/10 | Infra, auth OTP + PIN, suppression de compte, comptes stores | 🟡 **En retard** : base faite, auth pas commencée |
-| S3 | 05/10 → 11/10 | Encaissements · 1er build iOS sur iPhone | ⬜ |
+| S3 | 05/10 → 11/10 | Encaissements · 1er build iOS sur iPhone | 🟡 Auth, onboarding, encaissements codés et testés sur Android ; **iOS non testé** |
 | S4 | 12/10 → 18/10 | Dépenses · 1er build TestFlight | ⬜ |
 | S5 | 19/10 → 25/10 | Dashboard | ⬜ |
 | S6 | 26/10 → 01/11 | Trésorerie + transferts · **lancement test fermé Play Store** | ⬜ |
@@ -144,7 +144,8 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 2. 🟡 `feature/comptes-transactions` : API transactions + soldes (ADR 0009), 47 tests, migrée et testée sur Supabase. PR vers `dev` à ouvrir.
 3. 🟡 `feature/auth-otp-pin` (partie de `feature/setup-mobile`) : codée, 38 tests, validée sur émulateur Android. **Test iOS sur le Mac**, puis PR `setup-mobile → dev` **puis** PR `auth-otp-pin → dev`, dans cet ordre.
 4. 🟡 `feature/onboarding` (partie de auth + transactions) : codée, testée sur émulateur. PR après #3 et #5.
-5. ⬜ Encaissements (app) : saisie, sqflite + sync, annulation, historique.
+5. 🟡 `feature/encaissements` : saisie, sqflite + sync hors ligne, annulation, historique (ADR 0011). 72 tests, testé sur émulateur.
+6. ⬜ S4 : Dépenses (réutilise le même mécanisme) + 1er build TestFlight.
 
 ---
 
@@ -179,6 +180,7 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
 | 28/09 | Identifiant d'app `com.kesbi.app` | [ADR 0005](decisions/0005-identifiant-application.md) |
 | 29/09 | Riverpod (sans codegen) + go_router | [ADR 0006](decisions/0006-riverpod-go-router.md) |
 | 28/09 | Repo déplacé hors OneDrive vers `C:\dev\Kesbi` | — |
+| 07/10 | Synchronisation hors ligne : sqflite, déclencheurs, gestion des erreurs | [ADR 0011](decisions/0011-synchronisation-hors-ligne.md) |
 | 07/10 | Suppression de compte : données + utilisateur Supabase dans une transaction SQL | [ADR 0010](decisions/0010-suppression-de-compte.md) |
 | 07/10 | Démarches administratives (stores, SMS, Render) reportées à novembre, priorité au code | — |
 | 07/10 | Transactions : montant signé, comptes sans table, annulation par écriture opposée | [ADR 0009](decisions/0009-modele-transactions.md) |
@@ -208,6 +210,12 @@ Plan de délestage si retard : alléger Rapports → simplifier le graphique →
   aucune donnée Supabase touchée) : onboarding complet → Accueil 350 000 FCFA, Profil, suppression
   sans clé secrète → 503 et rien d'effacé. Bug trouvé : numéro Supabase sans « + » non reconnu (corrigé).
 - Ordre de fusion : #3 (app + auth) → #5 (transactions) → onboarding.
+- `feature/encaissements` (sur onboarding) : saisie, stockage local, synchro hors ligne, annulation,
+  historique (ADR 0011). 72 tests mobile. Émulateur : saisie en ligne, saisie **hors ligne** puis
+  synchronisation **automatique** au retour du réseau (soldes app = serveur), annulation.
+  Bugs trouvés et corrigés : rechargement en boucle de l'historique, clavier masquant « Enregistrer »
+  (risque de saisir 3 FCFA au lieu de 25 000), messages empilés, exception de synchro non rattrapée.
+- Ordre de fusion complet : #3 → #5 → onboarding → encaissements.
 
 ### 05/10/2026 (2)
 - MCP Supabase **fonctionnel** (Postgres 17, ref `ubpvgafdhjnsimffybnd`).

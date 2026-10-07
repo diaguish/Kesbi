@@ -14,6 +14,7 @@ abstract final class Routes {
   static const accueil = '/accueil';
   static const profil = '/accueil/profil';
   static const nouvelEncaissement = '/accueil/encaissement';
+  static const nouvelleDepense = '/accueil/depense';
   static const historique = '/accueil/transactions';
   static String transaction(String id) => '$historique/$id';
   static const tresorerie = '/tresorerie';

@@ -62,10 +62,24 @@ class AccueilScreen extends ConsumerWidget {
                 ),
               ),
             const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: () => context.push(Routes.nouvelEncaissement),
-              icon: const Icon(Icons.add),
-              label: const Text('Encaissement'),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () => context.push(Routes.nouvelEncaissement),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Encaissement'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => context.push(Routes.nouvelleDepense),
+                    icon: const Icon(Icons.remove),
+                    label: const Text('Dépense'),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 24),
             Row(

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
@@ -34,8 +35,10 @@ class TransactionsController extends Notifier<int> {
 
   void _changed() => state++;
 
-  /// Nouvel encaissement (E1). Enregistré localement d'abord : fonctionne hors ligne (E3).
-  Future<TransactionFinanciere> enregistrerEncaissement({
+  /// Nouvel encaissement (E1) ou nouvelle dépense (D1). Enregistré localement
+  /// d'abord : fonctionne hors ligne (E3, D2). [montant] est saisi en positif.
+  Future<TransactionFinanciere> enregistrer({
+    required TypeSaisie saisie,
     required int montant,
     required Compte compte,
     required String categorie,
@@ -46,9 +49,9 @@ class TransactionsController extends Notifier<int> {
     final now = ref.read(clockProvider)().toUtc();
     final tx = TransactionFinanciere(
       id: _uuid.v4(),
-      type: TypeTransaction.encaissement,
+      type: saisie.type,
       compte: compte,
-      montant: montant,
+      montant: saisie.montantSigne(montant),
       dateOperation: dateOperation.toUtc(),
       createdAt: now,
       categorie: categorie,
@@ -109,9 +112,10 @@ final operationsEnAttenteProvider = FutureProvider.autoDispose<int>((ref) {
 
 /// Filtre de l'historique (E5).
 class FiltreHistorique {
-  const FiltreHistorique({this.compte, this.depuis, this.limit});
+  const FiltreHistorique({this.compte, this.types, this.depuis, this.limit});
 
   final Compte? compte;
+  final Set<TypeTransaction>? types;
   final DateTime? depuis;
   final int? limit;
 
@@ -119,11 +123,13 @@ class FiltreHistorique {
   bool operator ==(Object other) =>
       other is FiltreHistorique &&
       other.compte == compte &&
+      setEquals(other.types, types) &&
       other.depuis == depuis &&
       other.limit == limit;
 
   @override
-  int get hashCode => Object.hash(compte, depuis, limit);
+  int get hashCode =>
+      Object.hash(compte, types == null ? null : Object.hashAllUnordered(types!), depuis, limit);
 }
 
 final historiqueProvider = FutureProvider.autoDispose
@@ -131,11 +137,7 @@ final historiqueProvider = FutureProvider.autoDispose
       ref.watch(transactionsControllerProvider);
       return ref
           .read(transactionStoreProvider)
-          .list(
-            compte: filtre.compte,
-            depuis: filtre.depuis,
-            limit: filtre.limit,
-          );
+          .list(compte: filtre.compte, types: filtre.types, depuis: filtre.depuis, limit: filtre.limit);
     });
 
 final transactionProvider = FutureProvider.autoDispose

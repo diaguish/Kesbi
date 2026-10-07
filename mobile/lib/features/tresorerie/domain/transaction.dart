@@ -30,6 +30,33 @@ enum SyncStatus {
   error,
 }
 
+/// Saisies du commerçant : le montant est tapé en positif, le signe vient du type.
+enum TypeSaisie {
+  encaissement(TypeTransaction.encaissement, categoriesEncaissement),
+  depense(TypeTransaction.depense, categoriesDepense);
+
+  const TypeSaisie(this.type, this.categories);
+
+  final TypeTransaction type;
+  final List<String> categories;
+
+  /// Montant signé (ADR 0009) : une dépense diminue le solde.
+  int montantSigne(int montantSaisi) => this == depense ? -montantSaisi : montantSaisi;
+}
+
+/// Catégories proposées pour une dépense. « Frais de transfert » est créée
+/// automatiquement par les transferts (S6).
+const categoriesDepense = [
+  'Achat de marchandises',
+  'Transport',
+  'Loyer',
+  'Salaires',
+  'Électricité / eau',
+  'Téléphone / internet',
+  'Taxes et impôts',
+  'Autre',
+];
+
 /// Catégories proposées pour un encaissement. « Règlement créance » arrive avec
 /// le module Créances (S7).
 const categoriesEncaissement = [

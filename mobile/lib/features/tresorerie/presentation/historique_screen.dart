@@ -5,13 +5,25 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/routes.dart';
 import '../../auth/presentation/auth_status_provider.dart';
 import '../domain/compte.dart';
+import '../domain/transaction.dart';
 import 'transactions_controller.dart';
 import 'widgets/transaction_tile.dart';
+
+enum FiltreType {
+  toutes('Toutes', null),
+  encaissements('Encaissements', {TypeTransaction.encaissement}),
+  depenses('Dépenses', {TypeTransaction.depense});
+
+  const FiltreType(this.label, this.types);
+
+  final String label;
+  final Set<TypeTransaction>? types;
+}
 
 enum Periode {
   semaine('7 jours', Duration(days: 7)),
   mois('30 jours', Duration(days: 30)),
-  tout('Tout', null);
+  tout('Depuis le début', null);
 
   const Periode(this.label, this.duree);
 
@@ -29,6 +41,7 @@ class HistoriqueScreen extends ConsumerStatefulWidget {
 
 class _HistoriqueScreenState extends ConsumerState<HistoriqueScreen> {
   Compte? _compte;
+  FiltreType _type = FiltreType.toutes;
   // Vue semaine par défaut (décision produit).
   Periode _periode = Periode.semaine;
 
@@ -46,6 +59,7 @@ class _HistoriqueScreenState extends ConsumerState<HistoriqueScreen> {
     final maintenant = _maintenant;
     final filtre = FiltreHistorique(
       compte: _compte,
+      types: _type.types,
       depuis: _periode.duree == null
           ? null
           : maintenant.subtract(_periode.duree!),
@@ -71,6 +85,24 @@ class _HistoriqueScreenState extends ConsumerState<HistoriqueScreen> {
                         label: Text(periode.label),
                         selected: _periode == periode,
                         onSelected: (_) => _choisirPeriode(periode),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+              child: Row(
+                children: [
+                  for (final type in FiltreType.values)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        key: ValueKey('type-${type.name}'),
+                        label: Text(type.label),
+                        selected: _type == type,
+                        onSelected: (_) => setState(() => _type = type),
                       ),
                     ),
                 ],
